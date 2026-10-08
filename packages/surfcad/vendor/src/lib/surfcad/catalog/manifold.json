@@ -1,0 +1,776 @@
+{
+  "kernel": "built/manifold.js",
+  "types": "built/manifold-encapsulated-types.d.ts",
+  "note": "The app and the headless entry ship this custom embind build. npm manifold-3d is a different build (status() is a string there and an enum object here) and is not a substitute.",
+  "functions": [
+    {
+      "name": "triangulate",
+      "kind": "function",
+      "signature": "triangulate(polygons: Polygons, epsilon?: number): Vec3[]",
+      "description": "Triangulates a set of /epsilon-valid polygons.",
+      "doc": "Triangulates a set of /epsilon-valid polygons.\n\n@param polygons The set of polygons, wound CCW and representing multiple\npolygons and/or holes.\n@param epsilon The value of epsilon, bounding the uncertainty of the input\n@return The triangles, referencing the original polygon points in order."
+    },
+    {
+      "name": "setMinCircularAngle",
+      "kind": "function",
+      "signature": "setMinCircularAngle(angle: number): void",
+      "description": "Sets an angle constraint the default number of circular segments for the {@link CrossSection.circle}, {@link Manifold.cylinder}, {@link Manifold.sphere}, and {@link Manifold.revolve} constructors. ",
+      "doc": "Sets an angle constraint the default number of circular segments for the\n{@link CrossSection.circle}, {@link Manifold.cylinder}, {@link\nManifold.sphere}, and\n{@link Manifold.revolve} constructors. The number of segments will be rounded\nup to the nearest factor of four.\n\n@param angle The minimum angle in degrees between consecutive segments. The\nangle will increase if the the segments hit the minimum edge length.\nDefault is 10 degrees."
+    },
+    {
+      "name": "setMinCircularEdgeLength",
+      "kind": "function",
+      "signature": "setMinCircularEdgeLength(length: number): void",
+      "description": "Sets a length constraint the default number of circular segments for the {@link CrossSection.circle}, {@link Manifold.cylinder}, {@link Manifold.sphere}, and {@link Manifold.revolve} constructors. ",
+      "doc": "Sets a length constraint the default number of circular segments for the\n{@link CrossSection.circle}, {@link Manifold.cylinder}, {@link\nManifold.sphere}, and\n{@link Manifold.revolve} constructors. The number of segments will be rounded\nup to the nearest factor of four.\n\n@param length The minimum length of segments. The length will\nincrease if the the segments hit the minimum angle. Default is 1.0."
+    },
+    {
+      "name": "setCircularSegments",
+      "kind": "function",
+      "signature": "setCircularSegments(segments: number): void",
+      "description": "Sets the default number of circular segments for the {@link CrossSection.circle}, {@link Manifold.cylinder}, {@link Manifold.sphere}, and {@link Manifold.revolve} constructors. ",
+      "doc": "Sets the default number of circular segments for the\n{@link CrossSection.circle}, {@link Manifold.cylinder}, {@link\nManifold.sphere}, and\n{@link Manifold.revolve} constructors. Overrides the edge length and angle\nconstraints and sets the number of segments to exactly this value.\n\n@param segments Number of circular segments. Default is 0, meaning no\nconstraint is applied."
+    },
+    {
+      "name": "getCircularSegments",
+      "kind": "function",
+      "signature": "getCircularSegments(radius: number): number",
+      "description": "Determine the result of the {@link setMinCircularAngle}, {@link setMinCircularEdgeLength}, and {@link setCircularSegments} defaults.",
+      "doc": "Determine the result of the {@link setMinCircularAngle},\n{@link setMinCircularEdgeLength}, and {@link setCircularSegments} defaults.\n\n@param radius For a given radius of circle, determine how many default\nsegments there will be."
+    },
+    {
+      "name": "resetToCircularDefaults",
+      "kind": "function",
+      "signature": "resetToCircularDefaults(): void",
+      "description": "Resets the circular construction parameters to their defaults if {@link setMinCircularAngle}, {@link setMinCircularEdgeLength}, or {@link setCircularSegments} have been called.",
+      "doc": "Resets the circular construction parameters to their defaults if\n{@link setMinCircularAngle}, {@link setMinCircularEdgeLength}, or {@link\nsetCircularSegments} have been called."
+    }
+  ],
+  "CrossSection": [
+    {
+      "name": "constructor",
+      "kind": "constructor",
+      "signature": "constructor(contours: Polygons, fillRule?: FillRule)",
+      "description": "Create a 2d cross-section from a set of contours (complex polygons). ",
+      "doc": "Create a 2d cross-section from a set of contours (complex polygons). A\nboolean union operation (with Positive filling rule by default) is\nperformed to combine overlapping polygons and ensure the resulting\nCrossSection is free of intersections.\n\n@param contours A set of closed paths describing zero or more complex\npolygons.\n@param fillRule The filling rule used to interpret polygon sub-regions in\ncontours."
+    },
+    {
+      "name": "square",
+      "kind": "static",
+      "signature": "static square(size?: Vec2|number, center?: boolean): CrossSection",
+      "description": "Constructs a square with the given XY dimensions. ",
+      "doc": "Constructs a square with the given XY dimensions. By default it is\npositioned in the first quadrant, touching the origin. If any dimensions in\nsize are negative, or if all are zero, an empty Manifold will be returned.\n\n@param size The X, and Y dimensions of the square.\n@param center Set to true to shift the center to the origin."
+    },
+    {
+      "name": "circle",
+      "kind": "static",
+      "signature": "static circle(radius: number, circularSegments?: number): CrossSection",
+      "description": "Constructs a circle of a given radius.",
+      "doc": "Constructs a circle of a given radius.\n\n@param radius Radius of the circle. Must be positive.\n@param circularSegments Number of segments along its diameter. Default is\ncalculated by the static Quality defaults according to the radius."
+    },
+    {
+      "name": "Extrusions",
+      "kind": "instance",
+      "signature": "Extrusions(2d to 3d manifold) /** * Constructs a manifold by extruding the cross-section along Z-axis. * * @param height Z-extent of extrusion. * @param nDivisions Number of extra copies of the crossSection to insert into * the shape vertically; especially useful in combination with twistDegrees to * avoid interpolation artifacts. Default is none. * @param twistDegrees Amount to twist the top crossSection relative to the * bottom, interpolated linearly for the divisions in between. * @param scaleTop Amount to scale the top (independently in X and Y). If the * scale is {0, 0}, a pure cone is formed with only a single vertex at the * top. Default {1, 1}. * @param center If true, the extrusion is centered on the z-axis through the * origin * as opposed to resting on the XY plane as is default. */ extrude( height: number, nDivisions?: number, twistDegrees?: number, scaleTop?: Vec2|number, center?: boolean): Manifold",
+      "description": "",
+      "doc": ""
+    },
+    {
+      "name": "revolve",
+      "kind": "instance",
+      "signature": "revolve(circularSegments?: number, revolveDegrees?: number): Manifold",
+      "description": "Constructs a manifold by revolving this cross-section around its Y-axis and then setting this as the Z-axis of the resulting manifold. ",
+      "doc": "Constructs a manifold by revolving this cross-section around its Y-axis and\nthen setting this as the Z-axis of the resulting manifold. If the contours\ncross the Y-axis, only the part on the positive X side is used.\nGeometrically valid input will result in geometrically valid output.\n\n@param circularSegments Number of segments along its diameter. Default is\ncalculated by the static Defaults."
+    },
+    {
+      "name": "transform",
+      "kind": "instance",
+      "signature": "transform(m: Mat3): CrossSection",
+      "description": "Transform this CrossSection in space. ",
+      "doc": "Transform this CrossSection in space. Stored in column-major order. This\noperation can be chained. Transforms are combined and applied lazily.\n\n@param m The affine transformation matrix to apply to all the vertices. The\n    last row is ignored."
+    },
+    {
+      "name": "translate",
+      "kind": "instance",
+      "signature": "translate(v: Vec2): CrossSection",
+      "description": "Move this CrossSection in space. ",
+      "doc": "Move this CrossSection in space. This operation can be chained. Transforms\nare combined and applied lazily.\n\n@param v The vector to add to every vertex."
+    },
+    {
+      "name": "translate",
+      "kind": "instance",
+      "signature": "translate(x: number, y?: number): CrossSection",
+      "description": "Move this CrossSection in space. ",
+      "doc": ""
+    },
+    {
+      "name": "rotate",
+      "kind": "instance",
+      "signature": "rotate(degrees: number): CrossSection",
+      "description": "Applies a (Z-axis) rotation to the CrossSection, in degrees. ",
+      "doc": "Applies a (Z-axis) rotation to the CrossSection, in degrees. This operation\ncan be chained. Transforms are combined and applied lazily.\n\n@param degrees degrees about the Z-axis to rotate."
+    },
+    {
+      "name": "scale",
+      "kind": "instance",
+      "signature": "scale(v: Vec2|number): CrossSection",
+      "description": "Scale this CrossSection in space. ",
+      "doc": "Scale this CrossSection in space. This operation can be chained. Transforms\nare combined and applied lazily.\n\n@param v The vector to multiply every vertex by per component."
+    },
+    {
+      "name": "mirror",
+      "kind": "instance",
+      "signature": "mirror(ax: Vec2): CrossSection",
+      "description": "Mirror this CrossSection over the arbitrary axis described by the unit form of the given vector. ",
+      "doc": "Mirror this CrossSection over the arbitrary axis described by the unit form\nof the given vector. If the length of the vector is zero, an empty\nCrossSection is returned. This operation can be chained. Transforms are\ncombined and applied lazily.\n\n@param ax the axis to be mirrored over"
+    },
+    {
+      "name": "warp",
+      "kind": "instance",
+      "signature": "warp(warpFunc: (vert: Vec2) => void): CrossSection",
+      "description": "Move the vertices of this CrossSection (creating a new one) according to any arbitrary input function, followed by a union operation (with a Positive fill rule) that ensures any introduced intersections are not included in the result.",
+      "doc": "Move the vertices of this CrossSection (creating a new one) according to\nany arbitrary input function, followed by a union operation (with a\nPositive fill rule) that ensures any introduced intersections are not\nincluded in the result.\n\n@param warpFunc A function that modifies a given vertex position."
+    },
+    {
+      "name": "offset",
+      "kind": "instance",
+      "signature": "offset(delta: number, joinType?: JoinType, miterLimit?: number, circularSegments?: number): CrossSection",
+      "description": "Inflate the contours in CrossSection by the specified delta, handling corners according to the given JoinType.",
+      "doc": "Inflate the contours in CrossSection by the specified delta, handling\ncorners according to the given JoinType.\n\n@param delta Positive deltas will cause the expansion of outlining contours\nto expand, and retraction of inner (hole) contours. Negative deltas will\nhave the opposite effect.\n@param joinType The join type specifying the treatment of contour joins\n(corners).\n@param miterLimit The maximum distance in multiples of delta that vertices\ncan be offset from their original positions with before squaring is\napplied, **when the join type is Miter** (default is 2, which is the\nminimum allowed). See the [Clipper2\nMiterLimit](http://www.angusj.com/clipper2/Docs/Units/Clipper.Offset/Classes/ClipperOffset/Properties/MiterLimit.htm)\npage for a visual example.\n@param circularSegments Number of segments per 360 degrees of\n<B>JoinType::Round</B> corners (roughly, the number of vertices that\nwill be added to each contour). Default is calculated by the static Quality\ndefaults according to the radius."
+    },
+    {
+      "name": "simplify",
+      "kind": "instance",
+      "signature": "simplify(epsilon?: number): CrossSection",
+      "description": "Remove vertices from the contours in this CrossSection that are less than the specified distance epsilon from an imaginary line that passes through its two adjacent vertices. ",
+      "doc": "Remove vertices from the contours in this CrossSection that are less than\nthe specified distance epsilon from an imaginary line that passes through\nits two adjacent vertices. Near duplicate vertices and collinear points\nwill be removed at lower epsilons, with elimination of line segments\nbecoming increasingly aggressive with larger epsilons.\n\nIt is recommended to apply this function following Offset, in order to\nclean up any spurious tiny line segments introduced that do not improve\nquality in any meaningful way. This is particularly important if further\noffseting operations are to be performed, which would compound the issue.\n\n@param epsilon minimum distance vertices must diverge from the hypothetical\n    outline without them in order to be included in the output (default\n    1e-6)"
+    },
+    {
+      "name": "add",
+      "kind": "instance",
+      "signature": "add(other: CrossSection|Polygons): CrossSection",
+      "description": "Boolean union",
+      "doc": "Boolean union"
+    },
+    {
+      "name": "subtract",
+      "kind": "instance",
+      "signature": "subtract(other: CrossSection|Polygons): CrossSection",
+      "description": "Boolean difference",
+      "doc": "Boolean difference"
+    },
+    {
+      "name": "intersect",
+      "kind": "instance",
+      "signature": "intersect(other: CrossSection|Polygons): CrossSection",
+      "description": "Boolean intersection",
+      "doc": "Boolean intersection"
+    },
+    {
+      "name": "union",
+      "kind": "static",
+      "signature": "static union(a: CrossSection|Polygons, b: CrossSection|Polygons): CrossSection",
+      "description": "Boolean union of the cross-sections a and b",
+      "doc": "Boolean union of the cross-sections a and b"
+    },
+    {
+      "name": "difference",
+      "kind": "static",
+      "signature": "static difference(a: CrossSection|Polygons, b: CrossSection|Polygons): CrossSection",
+      "description": "Boolean difference of the cross-section b from the cross-section a",
+      "doc": "Boolean difference of the cross-section b from the cross-section a"
+    },
+    {
+      "name": "intersection",
+      "kind": "static",
+      "signature": "static intersection(a: CrossSection|Polygons, b: CrossSection|Polygons): CrossSection",
+      "description": "Boolean intersection of the cross-sections a and b",
+      "doc": "Boolean intersection of the cross-sections a and b"
+    },
+    {
+      "name": "union",
+      "kind": "static",
+      "signature": "static union(polygons: (CrossSection|Polygons)[]): CrossSection",
+      "description": "Boolean union of a list of cross-sections",
+      "doc": "Boolean union of a list of cross-sections"
+    },
+    {
+      "name": "difference",
+      "kind": "static",
+      "signature": "static difference(polygons: (CrossSection|Polygons)[]): CrossSection",
+      "description": "Boolean difference of the tail of a list of cross-sections from its head",
+      "doc": "Boolean difference of the tail of a list of cross-sections from its head"
+    },
+    {
+      "name": "intersection",
+      "kind": "static",
+      "signature": "static intersection(polygons: (CrossSection|Polygons)[]): CrossSection",
+      "description": "Boolean intersection of a list of cross-sections",
+      "doc": "Boolean intersection of a list of cross-sections"
+    },
+    {
+      "name": "hull",
+      "kind": "instance",
+      "signature": "hull(): CrossSection",
+      "description": "Compute the convex hull of the contours in this CrossSection.",
+      "doc": "Compute the convex hull of the contours in this CrossSection."
+    },
+    {
+      "name": "hull",
+      "kind": "static",
+      "signature": "static hull(polygons: (CrossSection|Polygons)[]): CrossSection",
+      "description": "Compute the convex hull of all points in a list of polygons/cross-sections.",
+      "doc": "Compute the convex hull of all points in a list of polygons/cross-sections."
+    },
+    {
+      "name": "compose",
+      "kind": "static",
+      "signature": "static compose(polygons: (CrossSection|Polygons)[]): CrossSection",
+      "description": "Construct a CrossSection from a vector of other Polygons (batch boolean union).",
+      "doc": "Construct a CrossSection from a vector of other Polygons (batch\nboolean union)."
+    },
+    {
+      "name": "decompose",
+      "kind": "instance",
+      "signature": "decompose(): CrossSection[]",
+      "description": "This operation returns a vector of CrossSections that are topologically disconnected, each containing one outline contour with zero or more holes.",
+      "doc": "This operation returns a vector of CrossSections that are topologically\ndisconnected, each containing one outline contour with zero or more\nholes."
+    },
+    {
+      "name": "ofPolygons",
+      "kind": "static",
+      "signature": "static ofPolygons(contours: Polygons, fillRule?: FillRule): CrossSection",
+      "description": "Create a 2d cross-section from a set of contours (complex polygons). ",
+      "doc": "Create a 2d cross-section from a set of contours (complex polygons). A\nboolean union operation (with Positive filling rule by default) is\nperformed to combine overlapping polygons and ensure the resulting\nCrossSection is free of intersections.\n\n@param contours A set of closed paths describing zero or more complex\npolygons.\n@param fillRule The filling rule used to interpret polygon sub-regions in\ncontours."
+    },
+    {
+      "name": "toPolygons",
+      "kind": "instance",
+      "signature": "toPolygons(): SimplePolygon[]",
+      "description": "Return the contours of this CrossSection as a list of simple polygons.",
+      "doc": "Return the contours of this CrossSection as a list of simple polygons."
+    },
+    {
+      "name": "area",
+      "kind": "instance",
+      "signature": "area(): number",
+      "description": "Return the total area covered by complex polygons making up the CrossSection.",
+      "doc": "Return the total area covered by complex polygons making up the\nCrossSection."
+    },
+    {
+      "name": "isEmpty",
+      "kind": "instance",
+      "signature": "isEmpty(): boolean",
+      "description": "Does the CrossSection (not) have any contours?",
+      "doc": "Does the CrossSection (not) have any contours?"
+    },
+    {
+      "name": "numVert",
+      "kind": "instance",
+      "signature": "numVert(): number",
+      "description": "The number of vertices in the CrossSection.",
+      "doc": "The number of vertices in the CrossSection."
+    },
+    {
+      "name": "numContour",
+      "kind": "instance",
+      "signature": "numContour(): number",
+      "description": "The number of contours in the CrossSection.",
+      "doc": "The number of contours in the CrossSection."
+    },
+    {
+      "name": "bounds",
+      "kind": "instance",
+      "signature": "bounds(): Rect",
+      "description": "Returns the axis-aligned bounding rectangle of all the CrossSection's vertices.",
+      "doc": "Returns the axis-aligned bounding rectangle of all the CrossSection's\nvertices."
+    },
+    {
+      "name": "delete",
+      "kind": "instance",
+      "signature": "delete(): void",
+      "description": "Frees the WASM memory of this CrossSection, since these cannot be garbage-collected automatically.",
+      "doc": "Frees the WASM memory of this CrossSection, since these cannot be\ngarbage-collected automatically."
+    }
+  ],
+  "Manifold": [
+    {
+      "name": "constructor",
+      "kind": "constructor",
+      "signature": "constructor(mesh: Mesh)",
+      "description": "Convert a Mesh into a Manifold, retaining its properties and merging only the positions according to the merge vectors. ",
+      "doc": "Convert a Mesh into a Manifold, retaining its properties and merging only\nthe positions according to the merge vectors. Will throw an error if the\nresult is not an oriented 2-manifold. Will collapse degenerate triangles\nand unnecessary vertices.\n\nAll fields are read, making this structure suitable for a lossless\nround-trip of data from getMesh(). For multi-material input, use\nreserveIDs() to set a unique originalID for each material, and sort the\nmaterials into triangle runs."
+    },
+    {
+      "name": "tetrahedron",
+      "kind": "static",
+      "signature": "static tetrahedron(): Manifold",
+      "description": "Constructs a tetrahedron centered at the origin with one vertex at (1,1,1) and the rest at similarly symmetric points.",
+      "doc": "Constructs a tetrahedron centered at the origin with one vertex at (1,1,1)\nand the rest at similarly symmetric points."
+    },
+    {
+      "name": "cube",
+      "kind": "static",
+      "signature": "static cube(size?: Vec3|number, center?: boolean): Manifold",
+      "description": "Constructs a unit cube (edge lengths all one), by default in the first octant, touching the origin.",
+      "doc": "Constructs a unit cube (edge lengths all one), by default in the first\noctant, touching the origin.\n\n@param size The X, Y, and Z dimensions of the box.\n@param center Set to true to shift the center to the origin."
+    },
+    {
+      "name": "cylinder",
+      "kind": "static",
+      "signature": "static cylinder(height: number, radiusLow: number, radiusHigh?: number, circularSegments?: number, center?: boolean): Manifold",
+      "description": "A convenience constructor for the common case of extruding a circle. ",
+      "doc": "A convenience constructor for the common case of extruding a circle. Can\nalso form cones if both radii are specified.\n\n@param height Z-extent\n@param radiusLow Radius of bottom circle. Must be positive.\n@param radiusHigh Radius of top circle. Can equal zero. Default is equal to\nradiusLow.\n@param circularSegments How many line segments to use around the circle.\nDefault is calculated by the static Defaults.\n@param center Set to true to shift the center to the origin. Default is\norigin at the bottom."
+    },
+    {
+      "name": "sphere",
+      "kind": "static",
+      "signature": "static sphere(radius: number, circularSegments?: number): Manifold",
+      "description": "Constructs a geodesic sphere of a given radius.",
+      "doc": "Constructs a geodesic sphere of a given radius.\n\n@param radius Radius of the sphere. Must be positive.\n@param circularSegments Number of segments along its\ndiameter. This number will always be rounded up to the nearest factor of\nfour, as this sphere is constructed by refining an octahedron. This means\nthere are a circle of vertices on all three of the axis planes. Default is\ncalculated by the static Defaults."
+    },
+    {
+      "name": "extrude",
+      "kind": "static",
+      "signature": "static extrude(polygons: CrossSection|Polygons, height: number, nDivisions?: number, twistDegrees?: number, scaleTop?: Vec2|number, center?: boolean): Manifold",
+      "description": "Constructs a manifold from a set of polygons/cross-section by extruding them along the Z-axis.",
+      "doc": "Constructs a manifold from a set of polygons/cross-section by extruding\nthem along the Z-axis.\n\n@param polygons A set of non-overlapping polygons to extrude.\n@param height Z-extent of extrusion.\n@param nDivisions Number of extra copies of the crossSection to insert into\nthe shape vertically; especially useful in combination with twistDegrees to\navoid interpolation artifacts. Default is none.\n@param twistDegrees Amount to twist the top crossSection relative to the\nbottom, interpolated linearly for the divisions in between.\n@param scaleTop Amount to scale the top (independently in X and Y). If the\nscale is {0, 0}, a pure cone is formed with only a single vertex at the\ntop. Default {1, 1}.\n@param center If true, the extrusion is centered on the z-axis through the\n    origin\nas opposed to resting on the XY plane as is default."
+    },
+    {
+      "name": "revolve",
+      "kind": "static",
+      "signature": "static revolve(polygons: CrossSection|Polygons, circularSegments?: number, revolveDegrees?: number): Manifold",
+      "description": "Constructs a manifold from a set of polygons/cross-section by revolving them around the Y-axis and then setting this as the Z-axis of the resulting manifold. ",
+      "doc": "Constructs a manifold from a set of polygons/cross-section by revolving\nthem around the Y-axis and then setting this as the Z-axis of the resulting\nmanifold. If the polygons cross the Y-axis, only the part on the positive X\nside is used. Geometrically valid input will result in geometrically valid\noutput.\n\n@param polygons A set of non-overlapping polygons to revolve.\n@param circularSegments Number of segments along its diameter. Default is\ncalculated by the static Defaults.\n@param revolveDegrees Number of degrees to revolve. Default is 360 degrees."
+    },
+    {
+      "name": "ofMesh",
+      "kind": "static",
+      "signature": "static ofMesh(mesh: Mesh): Manifold",
+      "description": "Convert a Mesh into a Manifold, retaining its properties and merging only the positions according to the merge vectors. ",
+      "doc": "Convert a Mesh into a Manifold, retaining its properties and merging only\nthe positions according to the merge vectors. Will throw an error if the\nresult is not an oriented 2-manifold. Will collapse degenerate triangles\nand unnecessary vertices.\n\nAll fields are read, making this structure suitable for a lossless\nround-trip of data from getMesh(). For multi-material input, use\nreserveIDs() to set a unique originalID for each material, and sort the\nmaterials into triangle runs."
+    },
+    {
+      "name": "smooth",
+      "kind": "static",
+      "signature": "static smooth(mesh: Mesh, sharpenedEdges?: Smoothness[]): Manifold",
+      "description": "Constructs a smooth version of the input mesh by creating tangents; this method will throw if you have supplied tangents with your mesh already. ",
+      "doc": "Constructs a smooth version of the input mesh by creating tangents; this\nmethod will throw if you have supplied tangents with your mesh already. The\nactual triangle resolution is unchanged; use the Refine() method to\ninterpolate to a higher-resolution curve.\n\nBy default, every edge is calculated for maximum smoothness (very much\napproximately), attempting to minimize the maximum mean Curvature\nmagnitude. No higher-order derivatives are considered, as the interpolation\nis independent per triangle, only sharing constraints on their boundaries.\n\n@param mesh input Mesh.\n@param sharpenedEdges If desired, you can supply a vector of sharpened\nhalfedges, which should in general be a small subset of all halfedges.\nOrder of entries doesn't matter, as each one specifies the desired\nsmoothness (between zero and one, with one the default for all unspecified\nhalfedges) and the halfedge index (3 * triangle index + [0,1,2] where 0 is\nthe edge between triVert 0 and 1, etc).\n\nAt a smoothness value of zero, a sharp crease is made. The smoothness is\ninterpolated along each edge, so the specified value should be thought of\nas an average. Where exactly two sharpened edges meet at a vertex, their\ntangents are rotated to be colinear so that the sharpened edge can be\ncontinuous. Vertices with only one sharpened edge are completely smooth,\nallowing sharpened edges to smoothly vanish at termination. A single vertex\ncan be sharpened by sharping all edges that are incident on it, allowing\ncones to be formed."
+    },
+    {
+      "name": "levelSet",
+      "kind": "static",
+      "signature": "static levelSet(sdf: (point: Vec3) => number, bounds: Box, edgeLength: number, level?: number, tolerance?: number): Manifold",
+      "description": "Constructs a level-set Mesh from the input Signed-Distance Function (SDF). ",
+      "doc": "Constructs a level-set Mesh from the input Signed-Distance Function (SDF).\nThis uses a form of Marching Tetrahedra (akin to Marching Cubes, but better\nfor manifoldness). Instead of using a cubic grid, it uses a body-centered\ncubic grid (two shifted cubic grids). This means if your function's\ninterior exceeds the given bounds, you will see a kind of egg-crate shape\nclosing off the manifold, which is due to the underlying grid.\n\n@param sdf The signed-distance function which returns the signed distance\n    of\na given point in R^3. Positive values are inside, negative outside.\n@param bounds An axis-aligned box that defines the extent of the grid.\n@param edgeLength Approximate maximum edge length of the triangles in the\nfinal result. This affects grid spacing, and hence has a strong effect on\nperformance.\n@param level You can inset your Mesh by using a positive value, or outset\nit with a negative value.\n@param tolerance Ensure each vertex is within this distance of the true\nsurface. Defaults to -1, which will return the interpolated\ncrossing-point based on the two nearest grid points. Small positive values\nwill require more sdf evaluations per output vertex."
+    },
+    {
+      "name": "transform",
+      "kind": "instance",
+      "signature": "transform(m: Mat4): Manifold",
+      "description": "Transform this Manifold in space. ",
+      "doc": "Transform this Manifold in space. Stored in column-major order. This\noperation can be chained. Transforms are combined and applied lazily.\n\n@param m The affine transformation matrix to apply to all the vertices. The\n    last row is ignored."
+    },
+    {
+      "name": "translate",
+      "kind": "instance",
+      "signature": "translate(v: Vec3): Manifold",
+      "description": "Move this Manifold in space. ",
+      "doc": "Move this Manifold in space. This operation can be chained. Transforms are\ncombined and applied lazily.\n\n@param v The vector to add to every vertex."
+    },
+    {
+      "name": "translate",
+      "kind": "instance",
+      "signature": "translate(x: number, y?: number, z?: number): Manifold",
+      "description": "Move this Manifold in space. ",
+      "doc": ""
+    },
+    {
+      "name": "rotate",
+      "kind": "instance",
+      "signature": "rotate(v: Vec3): Manifold",
+      "description": "Applies an Euler angle rotation to the manifold, first about the X axis, then Y, then Z, in degrees. ",
+      "doc": "Applies an Euler angle rotation to the manifold, first about the X axis,\nthen Y, then Z, in degrees. We use degrees so that we can minimize rounding\nerror, and eliminate it completely for any multiples of 90 degrees.\nAdditionally, more efficient code paths are used to update the manifold\nwhen the transforms only rotate by multiples of 90 degrees. This operation\ncan be chained. Transforms are combined and applied lazily.\n\n@param v [X, Y, Z] rotation in degrees."
+    },
+    {
+      "name": "rotate",
+      "kind": "instance",
+      "signature": "rotate(x: number, y?: number, z?: number): Manifold",
+      "description": "Applies an Euler angle rotation to the manifold, first about the X axis, then Y, then Z, in degrees. ",
+      "doc": ""
+    },
+    {
+      "name": "scale",
+      "kind": "instance",
+      "signature": "scale(v: Vec3|number): Manifold",
+      "description": "Scale this Manifold in space. ",
+      "doc": "Scale this Manifold in space. This operation can be chained. Transforms are\ncombined and applied lazily.\n\n@param v The vector to multiply every vertex by per component."
+    },
+    {
+      "name": "mirror",
+      "kind": "instance",
+      "signature": "mirror(normal: Vec3): Manifold",
+      "description": "Mirror this Manifold over the plane described by the unit form of the given normal vector. ",
+      "doc": "Mirror this Manifold over the plane described by the unit form of the given\nnormal vector. If the length of the normal is zero, an empty Manifold is\nreturned. This operation can be chained. Transforms are combined and\napplied lazily.\n\n@param normal The normal vector of the plane to be mirrored over"
+    },
+    {
+      "name": "warp",
+      "kind": "instance",
+      "signature": "warp(warpFunc: (vert: Vec3) => void): Manifold",
+      "description": "This function does not change the topology, but allows the vertices to be moved according to any arbitrary input function. ",
+      "doc": "This function does not change the topology, but allows the vertices to be\nmoved according to any arbitrary input function. It is easy to create a\nfunction that warps a geometrically valid object into one which overlaps,\nbut that is not checked here, so it is up to the user to choose their\nfunction with discretion.\n\n@param warpFunc A function that modifies a given vertex position."
+    },
+    {
+      "name": "smoothByNormals",
+      "kind": "instance",
+      "signature": "smoothByNormals(normalIdx: number): Manifold",
+      "description": "Smooths out the Manifold by filling in the halfedgeTangent vectors. ",
+      "doc": "Smooths out the Manifold by filling in the halfedgeTangent vectors. The\ngeometry will remain unchanged until Refine or RefineToLength is called to\ninterpolate the surface. This version uses the supplied vertex normal\nproperties to define the tangent vectors.\n\n@param normalIdx The first property channel of the normals. NumProp must be\nat least normalIdx + 3. Any vertex where multiple normals exist and don't\nagree will result in a sharp edge."
+    },
+    {
+      "name": "smoothOut",
+      "kind": "instance",
+      "signature": "smoothOut(minSharpAngle?: number, minSmoothness?: number): Manifold",
+      "description": "Smooths out the Manifold by filling in the halfedgeTangent vectors. ",
+      "doc": "Smooths out the Manifold by filling in the halfedgeTangent vectors. The\ngeometry will remain unchanged until Refine or RefineToLength is called to\ninterpolate the surface. This version uses the geometry of the triangles\nand pseudo-normals to define the tangent vectors.\n\n@param minSharpAngle degrees, default 60. Any edges with angles greater\nthan this value will remain sharp. The rest will be smoothed to G1\ncontinuity, with the caveat that flat faces of three or more triangles will\nalways remain flat. With a value of zero, the model is faceted, but in this\ncase there is no point in smoothing.\n\n@param minSmoothness range: 0 - 1, default 0. The smoothness applied to\nsharp angles. The default gives a hard edge, while values > 0 will give a\nsmall fillet on these sharp edges. A value of 1 is equivalent to a\nminSharpAngle of 180 - all edges will be smooth."
+    },
+    {
+      "name": "refine",
+      "kind": "instance",
+      "signature": "refine(n: number): Manifold",
+      "description": "Increase the density of the mesh by splitting every edge into n pieces. ",
+      "doc": "Increase the density of the mesh by splitting every edge into n pieces. For\ninstance, with n = 2, each triangle will be split into 4 triangles. These\nwill all be coplanar (and will not be immediately collapsed) unless the\nMesh/Manifold has halfedgeTangents specified (e.g. from the Smooth()\nconstructor), in which case the new vertices will be moved to the\ninterpolated surface according to their barycentric coordinates.\n\n@param n The number of pieces to split every edge into. Must be > 1."
+    },
+    {
+      "name": "refineToLength",
+      "kind": "instance",
+      "signature": "refineToLength(length: number): Manifold",
+      "description": "Increase the density of the mesh by splitting each edge into pieces of roughly the input length. ",
+      "doc": "Increase the density of the mesh by splitting each edge into pieces of\nroughly the input length. Interior verts are added to keep the rest of the\ntriangulation edges also of roughly the same length. If halfedgeTangents\nare present (e.g. from the Smooth() constructor), the new vertices will be\nmoved to the interpolated surface according to their barycentric\ncoordinates.\n\n@param length The length that edges will be broken down to."
+    },
+    {
+      "name": "refineToTolerance",
+      "kind": "instance",
+      "signature": "refineToTolerance(tolerance: number): Manifold",
+      "description": "Increase the density of the mesh by splitting each edge into pieces such that any point on the resulting triangles is roughly within tolerance of the smoothly curved surface defined by the tangent vectors. ",
+      "doc": "Increase the density of the mesh by splitting each edge into pieces such\nthat any point on the resulting triangles is roughly within tolerance of\nthe smoothly curved surface defined by the tangent vectors. This means\ntightly curving regions will be divided more finely than smoother regions.\nIf halfedgeTangents are not present, the result will simply be a copy of\nthe original. Quads will ignore their interior triangle bisector.\n\n@param tolerance The desired maximum distance between the faceted mesh\nproduced and the exact smoothly curving surface. All vertices are exactly\non the surface, within rounding error."
+    },
+    {
+      "name": "setProperties",
+      "kind": "instance",
+      "signature": "setProperties(numProp: number, propFunc: (newProp: number[], position: Vec3, oldProp: number[]) => void): Manifold",
+      "description": "Create a new copy of this manifold with updated vertex properties by supplying a function that takes the existing position and properties as input. ",
+      "doc": "Create a new copy of this manifold with updated vertex properties by\nsupplying a function that takes the existing position and properties as\ninput. You may specify any number of output properties, allowing creation\nand removal of channels. Note: undefined behavior will result if you read\npast the number of input properties or write past the number of output\nproperties.\n\n@param numProp The new number of properties per vertex.\n@param propFunc A function that modifies the properties of a given vertex."
+    },
+    {
+      "name": "calculateCurvature",
+      "kind": "instance",
+      "signature": "calculateCurvature(gaussianIdx: number, meanIdx: number): Manifold",
+      "description": "Curvature is the inverse of the radius of curvature, and signed such that positive is convex and negative is concave. ",
+      "doc": "Curvature is the inverse of the radius of curvature, and signed such that\npositive is convex and negative is concave. There are two orthogonal\nprincipal curvatures at any point on a manifold, with one maximum and the\nother minimum. Gaussian curvature is their product, while mean\ncurvature is their sum. This approximates them for every vertex and assigns\nthem as vertex properties on the given channels.\n\n@param gaussianIdx The property channel index in which to store the\n    Gaussian curvature. An index < 0 will be ignored (stores nothing). The\n    property set will be automatically expanded to include the channel\n    index specified.\n@param meanIdx The property channel index in which to store the mean\n    curvature. An index < 0 will be ignored (stores nothing). The property\n    set will be automatically expanded to include the channel index\n    specified."
+    },
+    {
+      "name": "calculateNormals",
+      "kind": "instance",
+      "signature": "calculateNormals(normalIdx: number, minSharpAngle: number): Manifold",
+      "description": "Fills in vertex properties for normal vectors, calculated from the mesh geometry. ",
+      "doc": "Fills in vertex properties for normal vectors, calculated from the mesh\ngeometry. Flat faces composed of three or more triangles will remain flat.\n\n@param normalIdx The property channel in which to store the X\nvalues of the normals. The X, Y, and Z channels will be sequential. The\nproperty set will be automatically expanded to include up through normalIdx\n+ 2.\n\n@param minSharpAngle Any edges with angles greater than this value will\nremain sharp, getting different normal vector properties on each side of\nthe edge. By default, no edges are sharp and all normals are shared. With a\nvalue of zero, the model is faceted and all normals match their triangle\nnormals, but in this case it would be better not to calculate normals at\nall."
+    },
+    {
+      "name": "add",
+      "kind": "instance",
+      "signature": "add(other: Manifold): Manifold",
+      "description": "Boolean union",
+      "doc": "Boolean union"
+    },
+    {
+      "name": "subtract",
+      "kind": "instance",
+      "signature": "subtract(other: Manifold): Manifold",
+      "description": "Boolean difference",
+      "doc": "Boolean difference"
+    },
+    {
+      "name": "intersect",
+      "kind": "instance",
+      "signature": "intersect(other: Manifold): Manifold",
+      "description": "Boolean intersection",
+      "doc": "Boolean intersection"
+    },
+    {
+      "name": "union",
+      "kind": "static",
+      "signature": "static union(a: Manifold, b: Manifold): Manifold",
+      "description": "Boolean union of the manifolds a and b",
+      "doc": "Boolean union of the manifolds a and b"
+    },
+    {
+      "name": "difference",
+      "kind": "static",
+      "signature": "static difference(a: Manifold, b: Manifold): Manifold",
+      "description": "Boolean difference of the manifold b from the manifold a",
+      "doc": "Boolean difference of the manifold b from the manifold a"
+    },
+    {
+      "name": "intersection",
+      "kind": "static",
+      "signature": "static intersection(a: Manifold, b: Manifold): Manifold",
+      "description": "Boolean intersection of the manifolds a and b",
+      "doc": "Boolean intersection of the manifolds a and b"
+    },
+    {
+      "name": "union",
+      "kind": "static",
+      "signature": "static union(manifolds: Manifold[]): Manifold",
+      "description": "Boolean union of a list of manifolds",
+      "doc": "Boolean union of a list of manifolds"
+    },
+    {
+      "name": "difference",
+      "kind": "static",
+      "signature": "static difference(manifolds: Manifold[]): Manifold",
+      "description": "Boolean difference of the tail of a list of manifolds from its head",
+      "doc": "Boolean difference of the tail of a list of manifolds from its head"
+    },
+    {
+      "name": "intersection",
+      "kind": "static",
+      "signature": "static intersection(manifolds: Manifold[]): Manifold",
+      "description": "Boolean intersection of a list of manifolds",
+      "doc": "Boolean intersection of a list of manifolds"
+    },
+    {
+      "name": "split",
+      "kind": "instance",
+      "signature": "split(cutter: Manifold): Manifold[]",
+      "description": "Split cuts this manifold in two using the cutter manifold. ",
+      "doc": "Split cuts this manifold in two using the cutter manifold. The first result\nis the intersection, second is the difference. This is more efficient than\ndoing them separately.\n\n@param cutter"
+    },
+    {
+      "name": "splitByPlane",
+      "kind": "instance",
+      "signature": "splitByPlane(normal: Vec3, originOffset: number): Manifold[]",
+      "description": "Convenient version of Split() for a half-space.",
+      "doc": "Convenient version of Split() for a half-space.\n\n@param normal This vector is normal to the cutting plane and its length\n    does\nnot matter. The first result is in the direction of this vector, the second\nresult is on the opposite side.\n@param originOffset The distance of the plane from the origin in the\ndirection of the normal vector."
+    },
+    {
+      "name": "trimByPlane",
+      "kind": "instance",
+      "signature": "trimByPlane(normal: Vec3, originOffset: number): Manifold",
+      "description": "Removes everything behind the given half-space plane.",
+      "doc": "Removes everything behind the given half-space plane.\n\n@param normal This vector is normal to the cutting plane and its length\n    does not matter. The result is in the direction of this vector from the\n    plane.\n@param originOffset The distance of the plane from the origin in the\n    direction of the normal vector."
+    },
+    {
+      "name": "slice",
+      "kind": "instance",
+      "signature": "slice(height: number): CrossSection",
+      "description": "Returns the cross section of this object parallel to the X-Y plane at the specified height. ",
+      "doc": "Returns the cross section of this object parallel to the X-Y plane at the\nspecified height. Using a height equal to the bottom\nof the bounding box will return the bottom faces, while using a height\nequal to the top of the bounding box will return empty.\n\n@param height Z-level of slice."
+    },
+    {
+      "name": "project",
+      "kind": "instance",
+      "signature": "project(): CrossSection",
+      "description": "Returns a cross section representing the projected outline of this object onto the X-Y plane.",
+      "doc": "Returns a cross section representing the projected outline of this object\nonto the X-Y plane."
+    },
+    {
+      "name": "hull",
+      "kind": "instance",
+      "signature": "hull(): Manifold",
+      "description": "Compute the convex hull of all points in this Manifold.",
+      "doc": "Compute the convex hull of all points in this Manifold."
+    },
+    {
+      "name": "hull",
+      "kind": "static",
+      "signature": "static hull(points: (Manifold|Vec3)[]): Manifold",
+      "description": "Compute the convex hull of all points contained within a set of Manifolds and point vectors.",
+      "doc": "Compute the convex hull of all points contained within a set of Manifolds\nand point vectors."
+    },
+    {
+      "name": "compose",
+      "kind": "static",
+      "signature": "static compose(manifolds: Manifold[]): Manifold",
+      "description": "Constructs a new manifold from a list of other manifolds. ",
+      "doc": "Constructs a new manifold from a list of other manifolds. This is a purely\ntopological operation, so care should be taken to avoid creating\noverlapping results. It is the inverse operation of Decompose().\n\n@param manifolds A list of Manifolds to lazy-union together."
+    },
+    {
+      "name": "decompose",
+      "kind": "instance",
+      "signature": "decompose(): Manifold[]",
+      "description": "This operation returns a vector of Manifolds that are topologically disconnected. ",
+      "doc": "This operation returns a vector of Manifolds that are topologically\ndisconnected. If everything is connected, the vector is length one,\ncontaining a copy of the original. It is the inverse operation of\nCompose()."
+    },
+    {
+      "name": "isEmpty",
+      "kind": "instance",
+      "signature": "isEmpty(): boolean",
+      "description": "Does the Manifold have any triangles?",
+      "doc": "Does the Manifold have any triangles?"
+    },
+    {
+      "name": "numVert",
+      "kind": "instance",
+      "signature": "numVert(): number",
+      "description": "The number of vertices in the Manifold.",
+      "doc": "The number of vertices in the Manifold."
+    },
+    {
+      "name": "numTri",
+      "kind": "instance",
+      "signature": "numTri(): number",
+      "description": "The number of triangles in the Manifold.",
+      "doc": "The number of triangles in the Manifold."
+    },
+    {
+      "name": "numEdge",
+      "kind": "instance",
+      "signature": "numEdge(): number",
+      "description": "The number of edges in the Manifold.",
+      "doc": "The number of edges in the Manifold."
+    },
+    {
+      "name": "numProp",
+      "kind": "instance",
+      "signature": "numProp(): number",
+      "description": "The number of properties per vertex in the Manifold.",
+      "doc": "The number of properties per vertex in the Manifold."
+    },
+    {
+      "name": "numPropVert",
+      "kind": "instance",
+      "signature": "numPropVert(): number\n\n  /**\n   * Returns the axis-aligned bounding box of all the Manifold's vertices.\n   */\n  boundingBox(): Box",
+      "description": "The number of property vertices in the Manifold. ",
+      "doc": "The number of property vertices in the Manifold. This will always be >=\nnumVert, as some physical vertices may be duplicated to account for\ndifferent properties on different neighboring triangles."
+    },
+    {
+      "name": "tolerance",
+      "kind": "instance",
+      "signature": "tolerance(): number",
+      "description": "Returns the tolerance of this Manifold's vertices, which tracks the approximate rounding error over all the transforms and operations that have led to this state. ",
+      "doc": "Returns the tolerance of this Manifold's vertices, which tracks the\napproximate rounding error over all the transforms and operations that have\nled to this state. Any triangles that are colinear within this tolerance\nare considered degenerate and removed. This is the value of &epsilon;\ndefining\n[&epsilon;-valid](https://github.com/elalish/manifold/wiki/Manifold-Library#definition-of-%CE%B5-valid)."
+    },
+    {
+      "name": "setTolerance",
+      "kind": "instance",
+      "signature": "setTolerance(tolerance: number): Manifold",
+      "description": "Return a copy of the manifold with the set tolerance value. ",
+      "doc": "Return a copy of the manifold with the set tolerance value.\nThis performs mesh simplification when the tolerance value is increased."
+    },
+    {
+      "name": "genus",
+      "kind": "instance",
+      "signature": "genus(): number",
+      "description": "The genus is a topological property of the manifold, representing the number of \"handles\". ",
+      "doc": "The genus is a topological property of the manifold, representing the\nnumber of \"handles\". A sphere is 0, torus 1, etc. It is only meaningful for\na single mesh, so it is best to call Decompose() first."
+    },
+    {
+      "name": "surfaceArea",
+      "kind": "instance",
+      "signature": "surfaceArea(): number",
+      "description": "Returns the surface area of the manifold.",
+      "doc": "Returns the surface area of the manifold."
+    },
+    {
+      "name": "volume",
+      "kind": "instance",
+      "signature": "volume(): number",
+      "description": "Returns the volume of the manifold.",
+      "doc": "Returns the volume of the manifold."
+    },
+    {
+      "name": "minGap",
+      "kind": "instance",
+      "signature": "minGap(other: Manifold, searchLength: number): number",
+      "description": "Returns the minimum gap between two manifolds. ",
+      "doc": "Returns the minimum gap between two manifolds. Returns a float between\n0 and searchLength."
+    },
+    {
+      "name": "getMesh",
+      "kind": "instance",
+      "signature": "getMesh(normalIdx?: number): Mesh",
+      "description": "Returns a Mesh that is designed to easily push into a renderer, including all interleaved vertex properties that may have been input. ",
+      "doc": "Returns a Mesh that is designed to easily push into a renderer, including\nall interleaved vertex properties that may have been input. It also\nincludes relations to all the input meshes that form a part of this result\nand the transforms applied to each.\n\n@param normalIdx If the original MeshGL inputs that formed this manifold\nhad properties corresponding to normal vectors, you can specify the first\nof the three consecutive property channels forming the (x, y, z) normals,\nwhich will cause this output MeshGL to automatically update these normals\naccording to the applied transforms and front/back side. normalIdx + 3 must\nbe <= numProp, and all original MeshGLs must use the same channels for\ntheir normals."
+    },
+    {
+      "name": "asOriginal",
+      "kind": "instance",
+      "signature": "asOriginal(): Manifold",
+      "description": "If you copy a manifold, but you want this new copy to have new properties (e.g. a different UV mapping), you can reset its IDs to a new original, meaning it will now be referenced by its descendants instead of the meshes it was built from, allowing you to differentiate the cop...",
+      "doc": "If you copy a manifold, but you want this new copy to have new properties\n(e.g. a different UV mapping), you can reset its IDs to a new original,\nmeaning it will now be referenced by its descendants instead of the meshes\nit was built from, allowing you to differentiate the copies when applying\nyour properties to the final result.\n\nThis function also condenses all coplanar faces in the relation, and\ncollapses those edges. If you want to have inconsistent properties across\nthese faces, meaning you want to preserve some of these edges, you should\ninstead call GetMesh(), calculate your properties and use these to\nconstruct a new manifold."
+    },
+    {
+      "name": "originalID",
+      "kind": "instance",
+      "signature": "originalID(): number",
+      "description": "If this mesh is an original, this returns its ID that can be referenced by product manifolds. ",
+      "doc": "If this mesh is an original, this returns its ID that can be referenced\nby product manifolds. If this manifold is a product, this\nreturns -1."
+    },
+    {
+      "name": "reserveIDs",
+      "kind": "static",
+      "signature": "static reserveIDs(count: number): number",
+      "description": "Returns the first of n sequential new unique mesh IDs for marking sets of triangles that can be looked up after further operations. ",
+      "doc": "Returns the first of n sequential new unique mesh IDs for marking sets of\ntriangles that can be looked up after further operations. Assign to\nMesh.runOriginalID vector."
+    },
+    {
+      "name": "delete",
+      "kind": "instance",
+      "signature": "delete(): void",
+      "description": "Frees the WASM memory of this Manifold, since these cannot be garbage-collected automatically.",
+      "doc": "Frees the WASM memory of this Manifold, since these cannot be\ngarbage-collected automatically."
+    }
+  ],
+  "Mesh": [
+    {
+      "name": "constructor",
+      "kind": "constructor",
+      "signature": "constructor(options: MeshOptions)",
+      "description": "",
+      "doc": ""
+    },
+    {
+      "name": "merge",
+      "kind": "instance",
+      "signature": "merge(): boolean",
+      "description": "Number of properties per vertex, always >= 3.",
+      "doc": "Number of properties per vertex, always >= 3."
+    },
+    {
+      "name": "verts",
+      "kind": "instance",
+      "signature": "verts(tri: number): SealedUint32Array<3>",
+      "description": "Gets the three vertex indices of this triangle in CCW order.",
+      "doc": "Gets the three vertex indices of this triangle in CCW order.\n\n@param tri triangle index."
+    },
+    {
+      "name": "position",
+      "kind": "instance",
+      "signature": "position(vert: number): SealedFloat32Array<3>",
+      "description": "Gets the x, y, z position of this vertex.",
+      "doc": "Gets the x, y, z position of this vertex.\n\n@param vert vertex index."
+    },
+    {
+      "name": "extras",
+      "kind": "instance",
+      "signature": "extras(vert: number): Float32Array",
+      "description": "Gets any other properties associated with this vertex.",
+      "doc": "Gets any other properties associated with this vertex.\n\n@param vert vertex index."
+    },
+    {
+      "name": "tangent",
+      "kind": "instance",
+      "signature": "tangent(halfedge: number): SealedFloat32Array<4>",
+      "description": "Gets the tangent vector starting at verts(tri)[j] pointing to the next Bezier point along the CCW edge. ",
+      "doc": "Gets the tangent vector starting at verts(tri)[j] pointing to the next\nBezier point along the CCW edge. The fourth value is its weight.\n\n@param halfedge halfedge index: 3 * tri + j, where j is 0, 1, or 2."
+    },
+    {
+      "name": "transform",
+      "kind": "instance",
+      "signature": "transform(run: number): Mat4",
+      "description": "Gets the column-major 4x4 matrix transform from the original mesh to these related triangles.",
+      "doc": "Gets the column-major 4x4 matrix transform from the original mesh to these\nrelated triangles.\n\n@param run triangle run index."
+    }
+  ]
+}

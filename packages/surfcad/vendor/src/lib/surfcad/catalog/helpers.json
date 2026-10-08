@@ -1,0 +1,1597 @@
+{
+  "generatedFrom": "src/lib/surfcad/runtime.js HELPER_FUNCTIONS",
+  "count": 71,
+  "helpers": [
+    {
+      "name": "shell",
+      "signature": "shell(manifold, thickness, opening = 'z')",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "thickness",
+          "text": "thickness"
+        },
+        {
+          "name": "opening",
+          "text": "opening = 'z'",
+          "default": "'z'"
+        }
+      ],
+      "description": "shell(manifold, thickness, opening) — the CAVITY tool. ",
+      "doc": "Hollows a solid out to a **uniform wall thickness**, leaving an opening at the\nface you choose. `hollow()` returns the finished walls; `shell()` returns the\ncavity so the older `part.subtract(shell(part, 2, 'z'))` still works.\n\nEvery boundary vertex is placed on the inward offset of each face meeting it, so\nthe wall measures `thickness` perpendicular to every face and corners stay sharp.\n(The pre-2026 version scaled the solid by one ratio, which gave a 60x20 box a\n2.5mm wall on Y and a 7.5mm wall on X.)\n\n\n\n**Parameters:**\n- `manifold` - The input manifold\n- `thickness` - Wall thickness in mm\n- `opening` - which face(s) the cavity breaks through (default `'z'`, the +Z face):\n  - a signed axis: `'z'`, `'-z'`, `'x'`, `'-x'`, `'y'`, `'-y'`\n  - `'none'` for a fully closed hollow\n  - a face object from `facesByNormal()` / `planarFaceAt()`\n  - a viewport face pick: `{ center: [...], normal: [...] }`\n  - an array mixing any of the above\n\n**Returns:** `hollow()` the shelled solid; `shell()` the cavity to subtract\n\n**Notes:**\n- Picking a face that is no longer on the body throws and tells you to re-pick,\n  rather than silently shelling the wrong side.\n- A thickness the body cannot take throws instead of returning a fold.\n- Curved and lofted walls are supported; the offset follows the tessellation.\n\n---",
+      "examples": [
+        "// Uniform 2mm wall, open at the top\nconst box = Manifold.cube([50, 30, 40], true);\nreturn hollow(box, 2, 'z');\n\n// Opening on a face you picked in the viewport, or queried\nlet part = Manifold.cylinder(40, 20, 20, 64);\npart = hollow(part, 2.5, facesByNormal(part, [0, 0, 1])[0]);\n\n// Closed hollow (a sealed void), and two openings at once\nconst sealed = hollow(Manifold.cube([30, 30, 30], true), 3, 'none');\nconst openBoth = hollow(Manifold.cube([30, 30, 30], true), 3, ['z', '-z']);"
+      ]
+    },
+    {
+      "name": "hollow",
+      "signature": "hollow(manifold, thickness, opening = 'z')",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "thickness",
+          "text": "thickness"
+        },
+        {
+          "name": "opening",
+          "text": "opening = 'z'",
+          "default": "'z'"
+        }
+      ],
+      "description": "hollow(manifold, thickness, opening) — the shelled SOLID (walls only).",
+      "doc": "Hollows a solid out to a **uniform wall thickness**, leaving an opening at the\nface you choose. `hollow()` returns the finished walls; `shell()` returns the\ncavity so the older `part.subtract(shell(part, 2, 'z'))` still works.\n\nEvery boundary vertex is placed on the inward offset of each face meeting it, so\nthe wall measures `thickness` perpendicular to every face and corners stay sharp.\n(The pre-2026 version scaled the solid by one ratio, which gave a 60x20 box a\n2.5mm wall on Y and a 7.5mm wall on X.)\n\n\n\n**Parameters:**\n- `manifold` - The input manifold\n- `thickness` - Wall thickness in mm\n- `opening` - which face(s) the cavity breaks through (default `'z'`, the +Z face):\n  - a signed axis: `'z'`, `'-z'`, `'x'`, `'-x'`, `'y'`, `'-y'`\n  - `'none'` for a fully closed hollow\n  - a face object from `facesByNormal()` / `planarFaceAt()`\n  - a viewport face pick: `{ center: [...], normal: [...] }`\n  - an array mixing any of the above\n\n**Returns:** `hollow()` the shelled solid; `shell()` the cavity to subtract\n\n**Notes:**\n- Picking a face that is no longer on the body throws and tells you to re-pick,\n  rather than silently shelling the wrong side.\n- A thickness the body cannot take throws instead of returning a fold.\n- Curved and lofted walls are supported; the offset follows the tessellation.\n\n---",
+      "examples": [
+        "// Uniform 2mm wall, open at the top\nconst box = Manifold.cube([50, 30, 40], true);\nreturn hollow(box, 2, 'z');\n\n// Opening on a face you picked in the viewport, or queried\nlet part = Manifold.cylinder(40, 20, 20, 64);\npart = hollow(part, 2.5, facesByNormal(part, [0, 0, 1])[0]);\n\n// Closed hollow (a sealed void), and two openings at once\nconst sealed = hollow(Manifold.cube([30, 30, 30], true), 3, 'none');\nconst openBoth = hollow(Manifold.cube([30, 30, 30], true), 3, ['z', '-z']);"
+      ]
+    },
+    {
+      "name": "getScaleRatio",
+      "signature": "getScaleRatio(manifold, axis, thickness)",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "axis",
+          "text": "axis"
+        },
+        {
+          "name": "thickness",
+          "text": "thickness"
+        }
+      ],
+      "description": "Helper to compute uniform scale ratio based on min perpendicular dimension LEGACY: this is the math the pre-uniform-wall `shell()` used. ",
+      "doc": "Legacy. Computes the uniform scale ratio the old scale-based `shell()` used.\nNothing calls it any more — `shell()` offsets each face instead, because one\nscale ratio cannot give a non-cubic part a uniform wall. Kept so existing\nscripts that call it still run.\n\n**Parameters:**\n- `manifold` - The input manifold\n- `axis` - Axis index (0=x, 1=y, 2=z)\n- `thickness` - Desired wall thickness\n\n**Returns:** Scale ratio (0-1)\n\n---\n\n## Selection & Feature Helpers (C4)\n\nThese helpers add a geometric **selector layer** (Manifold has no native\nface/edge API) plus parametric **features** (holes, counterbores,\ncountersinks, chamfers). They read a manifold's mesh via `getMesh()` and\noperate in local 2D face frames, so a script can reason about \"the top\nface\", \"vertical edges\", or \"a hole pattern on this wall\" the way a CAD\nuser does.\n\nAll of them take and return standard `Manifold` objects and validate the\nresult (`status() === 'NoError'`), throwing on failure.",
+      "examples": []
+    },
+    {
+      "name": "roundedBox",
+      "signature": "roundedBox(size, radius, segments = 16)",
+      "params": [
+        {
+          "name": "size",
+          "text": "size"
+        },
+        {
+          "name": "radius",
+          "text": "radius"
+        },
+        {
+          "name": "segments",
+          "text": "segments = 16",
+          "default": "16"
+        }
+      ],
+      "description": "Create a rounded box (box with filleted edges)",
+      "doc": "Create a rounded box (box with filleted edges)",
+      "examples": []
+    },
+    {
+      "name": "tube",
+      "signature": "tube(outerRadius, innerRadius, height, segments = 32)",
+      "params": [
+        {
+          "name": "outerRadius",
+          "text": "outerRadius"
+        },
+        {
+          "name": "innerRadius",
+          "text": "innerRadius"
+        },
+        {
+          "name": "height",
+          "text": "height"
+        },
+        {
+          "name": "segments",
+          "text": "segments = 32",
+          "default": "32"
+        }
+      ],
+      "description": "Create a tube/pipe shape — round or rectangular. ",
+      "doc": "Creates a tube/pipe shape — round or **rectangular**. Passing an array as the\nfirst argument switches to the rectangular form (and the 4th argument becomes its\noptions object rather than a segment count).\n\n\n\n**Parameters:**\n- `outerRadius` - Outer radius, or `[width, depth]` for a rectangle (a single\n  number in `rectTube` means a square)\n- `innerRadius` - Inner radius. For a rectangle: a **number** is read as a\n  uniform wall thickness, `[width, depth]` as an explicit inner size.\n- `height` - Height of the tube (z = 0 .. height)\n- `segments` - Number of circular segments (default: 32). For a rectangle this\n  slot is the options object instead:\n  - `cornerRadius` - outer corner radius (default 0, i.e. sharp)\n  - `innerCornerRadius` - defaults to `cornerRadius - wall`, keeping the wall\n    uniform around the corner\n  - `segments` - segments per full circle for the corner arcs (default 32)\n  - `center` - center the extrusion on z instead of starting at z = 0\n\n---",
+      "examples": [
+        "// Round: 10mm outer radius, 8mm inner radius, 30mm tall\nconst pipe = tube(10, 8, 30, 32);\n\n// Rectangular 40 x 20, uniform 2.5mm wall, 60mm tall\nconst box = tube([40, 20], 2.5, 60);\n\n// Explicit inner size, and rounded corners (the wall stays uniform round them)\nconst a = tube([40, 20], [30, 10], 60);\nconst b = tube([40, 20], 2.5, 60, { cornerRadius: 4 });\n\n// Square tube, 3mm wall\nconst sq = rectTube(30, 3, 20);"
+      ]
+    },
+    {
+      "name": "rectTube",
+      "signature": "rectTube(outer, inner, height, opts = {})",
+      "params": [
+        {
+          "name": "outer",
+          "text": "outer"
+        },
+        {
+          "name": "inner",
+          "text": "inner"
+        },
+        {
+          "name": "height",
+          "text": "height"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "rectTube(outer, inner, height, opts) — rectangular (square) tube.",
+      "doc": "Creates a tube/pipe shape — round or **rectangular**. Passing an array as the\nfirst argument switches to the rectangular form (and the 4th argument becomes its\noptions object rather than a segment count).\n\n\n\n**Parameters:**\n- `outerRadius` - Outer radius, or `[width, depth]` for a rectangle (a single\n  number in `rectTube` means a square)\n- `innerRadius` - Inner radius. For a rectangle: a **number** is read as a\n  uniform wall thickness, `[width, depth]` as an explicit inner size.\n- `height` - Height of the tube (z = 0 .. height)\n- `segments` - Number of circular segments (default: 32). For a rectangle this\n  slot is the options object instead:\n  - `cornerRadius` - outer corner radius (default 0, i.e. sharp)\n  - `innerCornerRadius` - defaults to `cornerRadius - wall`, keeping the wall\n    uniform around the corner\n  - `segments` - segments per full circle for the corner arcs (default 32)\n  - `center` - center the extrusion on z instead of starting at z = 0\n\n---",
+      "examples": [
+        "// Round: 10mm outer radius, 8mm inner radius, 30mm tall\nconst pipe = tube(10, 8, 30, 32);\n\n// Rectangular 40 x 20, uniform 2.5mm wall, 60mm tall\nconst box = tube([40, 20], 2.5, 60);\n\n// Explicit inner size, and rounded corners (the wall stays uniform round them)\nconst a = tube([40, 20], [30, 10], 60);\nconst b = tube([40, 20], 2.5, 60, { cornerRadius: 4 });\n\n// Square tube, 3mm wall\nconst sq = rectTube(30, 3, 20);"
+      ]
+    },
+    {
+      "name": "hexPrism",
+      "signature": "hexPrism(radius, height)",
+      "params": [
+        {
+          "name": "radius",
+          "text": "radius"
+        },
+        {
+          "name": "height",
+          "text": "height"
+        }
+      ],
+      "description": "Create a hexagonal prism",
+      "doc": "Creates a hexagonal prism (6-sided cylinder).\n\n\n\n**Parameters:**\n- `radius` - Circumradius (center to vertex)\n- `height` - Height\n\n---",
+      "examples": [
+        "// Create a hex nut shape\nconst hex = hexPrism(10, 5);\nreturn hex;"
+      ]
+    },
+    {
+      "name": "mirror",
+      "signature": "mirror(manifold, plane = 'xy', keepOriginal = true)",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "plane",
+          "text": "plane = 'xy'",
+          "default": "'xy'"
+        },
+        {
+          "name": "keepOriginal",
+          "text": "keepOriginal = true",
+          "default": "true"
+        }
+      ],
+      "description": "Mirror a manifold across a plane",
+      "doc": "Mirrors a manifold across a plane.\n\n\n\n**Parameters:**\n- `manifold` - The manifold to mirror\n- `plane` - Mirror plane: 'xy', 'xz', or 'yz'\n- `keepOriginal` - If true, unions with original (default: true)\n\n---",
+      "examples": [
+        "// Create a symmetric part\nconst half = Manifold.cube([20, 10, 10]);\nconst full = mirror(half, 'yz', true);\nreturn full;"
+      ]
+    },
+    {
+      "name": "array3D",
+      "signature": "array3D(manifold, counts, spacing)",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "counts",
+          "text": "counts"
+        },
+        {
+          "name": "spacing",
+          "text": "spacing"
+        }
+      ],
+      "description": "Create an array/grid of manifolds",
+      "doc": "Creates a 3D rectangular array of copies.\n\n\n\n**Parameters:**\n- `manifold` - The manifold to array\n- `counts` - [nx, ny, nz] number of copies in each direction\n- `spacing` - [dx, dy, dz] spacing between copies\n\n---",
+      "examples": [
+        "// Create a 3x3x2 grid of cubes\nconst cube = Manifold.cube([5, 5, 5], true);\nconst grid = array3D(cube, [3, 3, 2], [10, 10, 10]);\nreturn grid;"
+      ]
+    },
+    {
+      "name": "polarArray",
+      "signature": "polarArray(manifold, count, radius = 0, axis = 'z')",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "count",
+          "text": "count"
+        },
+        {
+          "name": "radius",
+          "text": "radius = 0",
+          "default": "0"
+        },
+        {
+          "name": "axis",
+          "text": "axis = 'z'",
+          "default": "'z'"
+        }
+      ],
+      "description": "Create a polar array (copies around an axis)",
+      "doc": "Creates a circular/polar array of copies around an axis.\n\n\n\n**Parameters:**\n- `manifold` - The manifold to array\n- `count` - Number of copies\n- `radius` - Radius from center (optional offset)\n- `axis` - Rotation axis: 'x', 'y', or 'z' (default: 'z')\n\n---",
+      "examples": [
+        "// Create 6 cylinders in a circle\nconst cylinder = Manifold.cylinder(20, 5, 5, 32);\nconst circle = polarArray(cylinder, 6, 30, 'z');\nreturn circle;"
+      ]
+    },
+    {
+      "name": "center",
+      "signature": "center(manifold, axes = [true, true, true])",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "axes",
+          "text": "axes = [true, true, true]",
+          "default": "[true, true, true]"
+        }
+      ],
+      "description": "Center a manifold at origin",
+      "doc": "Centers a manifold at the origin.\n\n\n\n**Parameters:**\n- `manifold` - The manifold to center\n- `axes` - [centerX, centerY, centerZ] which axes to center (default: all true)\n\n---",
+      "examples": [
+        "// Center on all axes\nconst box = Manifold.cube([20, 30, 10]);\nconst centered = center(box, [true, true, true]);\nreturn centered;\n\n// Center only on X and Y\nconst partCentered = center(box, [true, true, false]);"
+      ]
+    },
+    {
+      "name": "align",
+      "signature": "align(manifold, options = {})",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "options",
+          "text": "options = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "Align a manifold to a specific position",
+      "doc": "Aligns a manifold to a specific position.\n\n\n\n**Parameters:**\n- `manifold` - The manifold to align\n- `options.min` - [x, y, z] align min bounds (use undefined to skip)\n- `options.max` - [x, y, z] align max bounds\n- `options.center` - [x, y, z] align center\n\n---",
+      "examples": [
+        "// Align min-Z to the origin\nconst box = Manifold.cube([20, 20, 20], true);\nconst aligned = align(box, { min: [undefined, undefined, 0] });\nreturn aligned;\n\n// Center on X, align max-Y to 50\nconst positioned = align(box, { \n  center: [0, undefined, undefined],\n  max: [undefined, 50, undefined]\n});"
+      ]
+    },
+    {
+      "name": "getDimensions",
+      "signature": "getDimensions(manifold)",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        }
+      ],
+      "description": "Get the dimensions of a manifold",
+      "doc": "Gets the dimensions and bounding box of a manifold.\n\n\n\n**Returns:**\n\n\n---",
+      "examples": [
+        "const box = Manifold.cube([20, 30, 10]);\nconst dims = getDimensions(box);\nconsole.log(dims.size);   // [20, 30, 10]\nconsole.log(dims.center); // [10, 15, 5]\nconsole.log(dims.min);    // [0, 0, 0]\nconsole.log(dims.max);    // [20, 30, 10]",
+        "{\n  size: [x, y, z],    // Dimensions\n  min: [x, y, z],     // Minimum corner\n  max: [x, y, z],     // Maximum corner\n  center: [x, y, z]   // Center point\n}"
+      ]
+    },
+    {
+      "name": "addDraft",
+      "signature": "addDraft(manifold, draftDeg, axis = \"z\")",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "draftDeg",
+          "text": "draftDeg"
+        },
+        {
+          "name": "axis",
+          "text": "axis = \"z\"",
+          "default": "\"z\""
+        }
+      ],
+      "description": "Add draft angle to a manifold — every side wall, true constant angle. ",
+      "doc": "Tilts the faces you select by a **true constant angle**, pivoting about where\neach face meets a reference plane. Essential for injection moulding and casting,\nwhere parts must release from the mould.\n\n`addDraft` is the whole-part form (every side wall, bottom stays put);\n`draftFaces` lets you name the faces, the pull direction, the reference plane and\nthe sign. The angle now comes out the same on every wall — the pre-2026 taper\nscaled perpendicular coordinates, so only the narrowest wall hit the requested\nangle.\n\n\n\n**Parameters:**\n- `manifold` - The manifold to draft\n- `faces` - which faces tilt: a viewport pick `{center, normal}`, a face from\n  `facesByNormal()`, a signed axis like `'-x'`, `'sides'` for every side wall, or\n  an array mixing those\n- `angleDeg` - **signed** draft angle in degrees. Positive tapers inward going\n  along the pull (the usual mould-release sense); negative flares outward.\n  Typical: 1-2° for smooth surfaces, 3-5° for textured.\n- `opts.pull` - pull / draw direction (default `'z'`; accepts `'-z'`, `[x,y,z]`)\n- `opts.reference` - the neutral plane that does not move: `'min'` (default),\n  `'mid'`, `'max'` along the pull, a number (coordinate along pull), or a\n  face / plane whose center defines it\n- `opts.sense` - `'taper'` makes every selected wall lean the same way round the\n  pull axis, so a hollow part keeps its wall thickness; `'face'` honours each\n  face's own outward normal, which is the mould-core sense on a cavity wall.\n  Defaults to `'taper'` for `'sides'` and `'face'` for named faces.\n\n**Returns:** The drafted manifold\n\n**Notes:**\n- Drafting a face perpendicular to the pull (a cap) throws — it has no direction\n  to tilt in. Pick the side walls, or change `opts.pull`.\n- Vertices shared by two selected faces are solved once against both, so drafted\n  corners stay sharp instead of doubling up.\n- An angle the body cannot take throws instead of returning a folded solid.\n\n---",
+      "examples": [
+        "// Whole part: 2° on every side wall, bottom fixed\nconst box = Manifold.cube([60, 20, 30], false);\nreturn addDraft(hollow(box, 2, 'z'), 2, 'z');\n\n// One picked face, pivoting about the top instead of the bottom\nlet part = Manifold.cube([60, 20, 30], false);\npart = draftFaces(part, facesByNormal(part, [1, 0, 0])[0], 3,\n  { pull: 'z', reference: 'max' });\n\n// Several faces at once (what a shift-click multi-pick emits), flaring outward\npart = draftFaces(part, [\n  { center: [60, 10, 15], normal: [1, 0, 0] },\n  { center: [0, 10, 15], normal: [-1, 0, 0] },\n], -3, { pull: 'z', reference: 'min' });"
+      ]
+    },
+    {
+      "name": "draftFaces",
+      "signature": "draftFaces(manifold, faces, angleDeg, opts = {})",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "faces",
+          "text": "faces"
+        },
+        {
+          "name": "angleDeg",
+          "text": "angleDeg"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "draftFaces(manifold, faces, angleDeg, opts) — tilt the selected faces by a true constant angle about their intersection with a reference plane. ",
+      "doc": "Tilts the faces you select by a **true constant angle**, pivoting about where\neach face meets a reference plane. Essential for injection moulding and casting,\nwhere parts must release from the mould.\n\n`addDraft` is the whole-part form (every side wall, bottom stays put);\n`draftFaces` lets you name the faces, the pull direction, the reference plane and\nthe sign. The angle now comes out the same on every wall — the pre-2026 taper\nscaled perpendicular coordinates, so only the narrowest wall hit the requested\nangle.\n\n\n\n**Parameters:**\n- `manifold` - The manifold to draft\n- `faces` - which faces tilt: a viewport pick `{center, normal}`, a face from\n  `facesByNormal()`, a signed axis like `'-x'`, `'sides'` for every side wall, or\n  an array mixing those\n- `angleDeg` - **signed** draft angle in degrees. Positive tapers inward going\n  along the pull (the usual mould-release sense); negative flares outward.\n  Typical: 1-2° for smooth surfaces, 3-5° for textured.\n- `opts.pull` - pull / draw direction (default `'z'`; accepts `'-z'`, `[x,y,z]`)\n- `opts.reference` - the neutral plane that does not move: `'min'` (default),\n  `'mid'`, `'max'` along the pull, a number (coordinate along pull), or a\n  face / plane whose center defines it\n- `opts.sense` - `'taper'` makes every selected wall lean the same way round the\n  pull axis, so a hollow part keeps its wall thickness; `'face'` honours each\n  face's own outward normal, which is the mould-core sense on a cavity wall.\n  Defaults to `'taper'` for `'sides'` and `'face'` for named faces.\n\n**Returns:** The drafted manifold\n\n**Notes:**\n- Drafting a face perpendicular to the pull (a cap) throws — it has no direction\n  to tilt in. Pick the side walls, or change `opts.pull`.\n- Vertices shared by two selected faces are solved once against both, so drafted\n  corners stay sharp instead of doubling up.\n- An angle the body cannot take throws instead of returning a folded solid.\n\n---",
+      "examples": [
+        "// Whole part: 2° on every side wall, bottom fixed\nconst box = Manifold.cube([60, 20, 30], false);\nreturn addDraft(hollow(box, 2, 'z'), 2, 'z');\n\n// One picked face, pivoting about the top instead of the bottom\nlet part = Manifold.cube([60, 20, 30], false);\npart = draftFaces(part, facesByNormal(part, [1, 0, 0])[0], 3,\n  { pull: 'z', reference: 'max' });\n\n// Several faces at once (what a shift-click multi-pick emits), flaring outward\npart = draftFaces(part, [\n  { center: [60, 10, 15], normal: [1, 0, 0] },\n  { center: [0, 10, 15], normal: [-1, 0, 0] },\n], -3, { pull: 'z', reference: 'min' });"
+      ]
+    },
+    {
+      "name": "cut",
+      "signature": "cut(manifold, plane, opts = {})",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "plane",
+          "text": "plane"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "cut(manifold, plane, opts) — split one or more bodies with a plane, then optionally delete pieces. ",
+      "doc": "Splits every selected body with a plane, then optionally deletes pieces. The\ncut is Manifold's `splitByPlane`: the `'+'` piece is the side the normal\npoints to, and `'-'` is the other side. Pieces you keep stay separate bodies\n(`decompose()` returns them one by one). A body that does not cross the plane\nis left alone — same solid, same volume, still one body.\n\n\n\n**Parameters:**\n- `manifold` - The solid, or several solids grouped by `Manifold.compose`\n- `plane` - a face `{ center, normal }`, or an explicit `{ normal, originOffset }`.\n  `offset` on a face is added along the normal (positive in the normal\n  direction). Offset 0 is omitted and the call stays `{ center, normal }`.\n  A world-axis name such as `'z'` is rejected.\n- `opts.keep` - `'both'` (default), `'+'`, or `'-'`\n- `opts.bodies` - which bodies to cut, each `{ at }` near that body's centroid.\n  Omit to cut every body. Bodies you skip are unchanged.\n- `opts.drop` - pieces to delete when you are not dropping a whole side:\n  `{ at, side: '+' | '-' }`\n\n**Returns:** The kept pieces. One piece is that solid. Several pieces are one\ncomposed manifold whose `decompose()` length is the number of pieces.\n\n**Notes:**\n- A body that only touches the plane is not cut.\n- Deleting every piece throws.\n- Pass `keep` or `drop`, not both.\n\n---",
+      "examples": [
+        "// Mid plane z = 0, keep both halves\nlet part = Manifold.cube([40, 30, 20], true);\npart = cut(part, { normal: [0, 0, 1], originOffset: 0 });\n\n// Same cut, keep only the +Z half\npart = cut(part, { normal: [0, 0, 1], originOffset: 0 }, { keep: '+' });\n\n// The plane is the face you picked — not a guessed world axis.\n// Offset 0 keeps this shape. A nonzero offset is along the face normal.\npart = cut(part, { center: [0, 0, 10], normal: [0, 0, 1] });\npart = cut(part, { center: [0, 0, 10], normal: [0, 0, 1], offset: -10 });"
+      ]
+    },
+    {
+      "name": "booleanBodies",
+      "signature": "booleanBodies(manifold, opts = {})",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "booleanBodies(manifold, { op, bodies, drop }) — union, difference, or intersect of named bodies. ",
+      "doc": "booleanBodies(manifold, { op, bodies, drop }) — union, difference, or\nintersect of named bodies. The first { at } is the target. Later entries\nare tools, unioned together, then subtracted from or intersected with the\ntarget. Bodies that were not named stay in the solid.\n\nop: 'union' | 'difference' | 'intersect'.\nbodies: [{ at }] near each body's vertex centroid, in pick order.\n  Omit to use every body, in decompose order.\ndrop: intersect only. [{ at }] centroids of leftover pieces to delete.\n  A piece that is not listed stays. Deleting every piece throws.",
+      "examples": [
+        "part = booleanBodies(part, { op: 'difference', bodies: [{ at: [0, 0, 5] }, { at: [0, 0, -5] }] });"
+      ]
+    },
+    {
+      "name": "externalBody",
+      "signature": "externalBody(source, opts = {})",
+      "params": [
+        {
+          "name": "source",
+          "text": "source"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "externalBody(source, { bodies, offset }) — a frozen copy of geometry from another part. `source` is a function holding that part's script text as it was at Accept (or a Manifold). ",
+      "doc": "externalBody(source, { bodies, offset }) — a frozen copy of geometry from\nanother part. `source` is a function holding that part's script text as\nit was at Accept (or a Manifold). It is not linked: editing the source part\nlater does not change this copy. `bodies` picks bodies by vertex centroid\nin the source frame; `offset` poses the copy into this part's frame.",
+      "examples": [
+        "const copy = externalBody(() => otherScript(), { offset: [40, 0, 0] });"
+      ]
+    },
+    {
+      "name": "move",
+      "signature": "move(manifold, delta, opts = {})",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "delta",
+          "text": "delta"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "move(manifold, [dx, dy, dz], { bodies: [{ at }] }) — translate one body. ",
+      "doc": "move(manifold, [dx, dy, dz], { bodies: [{ at }] }) — translate one body.\nSame Manifold.translate center() already uses, and the same decompose /\ncentroid / compose split cut() uses. Not a second kernel. The named body\nmoves; every other body stays. A zero delta returns the input solid.\n\nThe { at } point is that body's vertex centroid. cut() requires squared\ndistance ≤ 1e-4. A fillet does not retessellate the same way on the next\nrun, so that average can move by a few hundredths and a valid pick would\nmiss the tight gate. move() still takes the exact match, and otherwise\nthe nearest body within 1% of its radius (at least 0.05) when the next\nbody is farther than that. A point that is not near a centroid throws.",
+      "examples": [
+        "part = move(part, [10, 0, 0], { bodies: [{ at: [0, 0, 0] }] });"
+      ]
+    },
+    {
+      "name": "moveFace",
+      "signature": "moveFace(manifold, faces, distance, opts = {})",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "faces",
+          "text": "faces"
+        },
+        {
+          "name": "distance",
+          "text": "distance"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "Offsets each selected face along its own normal by `distance`. ",
+      "doc": "Offsets each selected face along its own normal by `distance`. Adjacent faces stay on their planes, so they extend or trim and the solid stays closed. This is not `move()`, which translates a whole body.\n\n\n\n**Parameters:**\n- `manifold` - The solid\n- `faces` - a viewport pick `{ center, normal }`, a face from `facesByNormal()`, or an array of those\n- `distance` - millimetres along each selected face normal\n- `opts.flip` - reverse each face normal\n\n**Returns:** The solid with those faces offset.\n\n**Notes:**\n- A distance the walls cannot absorb throws. It does not return a folded mesh.\n- A picked face that is no longer on the body throws.\n\n---",
+      "examples": [
+        "let part = Manifold.cube([40, 30, 20], true);\npart = moveFace(part, [{ center: [0, 0, 10], normal: [0, 0, 1] }], 5);\npart = moveFace(part, [{ center: [0, 0, 10], normal: [0, 0, 1] }], 5, { flip: true });"
+      ]
+    },
+    {
+      "name": "deleteFace",
+      "signature": "deleteFace(manifold, faces)",
+      "params": [
+        {
+          "name": "manifold",
+          "text": "manifold"
+        },
+        {
+          "name": "faces",
+          "text": "faces"
+        }
+      ],
+      "description": "deleteFace(manifold, faces) — remove the selected faces and heal by extending or trimming the neighboring faces. ",
+      "doc": "Removes the selected faces and heals the solid by extending or trimming the neighboring faces. A face is `{ center, normal }`, the same pick `moveFace` uses. If the neighbors cannot meet in a closed solid, this throws. It does not return an open or non-manifold mesh.\n\n\n\n**Parameters:**\n- `manifold` - The solid\n- `faces` - a viewport pick `{ center, normal }`, a face from `facesByNormal()`, or an array of those\n\n**Returns:** The healed solid.\n\n**Notes:**\n- Deleting one face of a cube throws: the side walls do not meet.\n- A planar chamfer whose two neighbors can meet is healed back to the sharp edge.\n\n---",
+      "examples": [
+        "let part = Manifold.cube([10, 10, 10], true);\npart = deleteFace(part, [{ center: [0, 0, 5], normal: [0, 0, 1] }]);"
+      ]
+    },
+    {
+      "name": "loft",
+      "signature": "loft({ topCS, bottomCS, height = 30, twistDeg = 0, topScale = 1.0, align = true, resolution = 1024 } = {})",
+      "params": [
+        {
+          "name": "{ topCS, bottomCS, height = 30, twistDeg = 0, topScale = 1.0, align = true, resolution = 1024 }",
+          "text": "{ topCS, bottomCS, height = 30, twistDeg = 0, topScale = 1.0, align = true, resolution = 1024 } = {}",
+          "default": "{}",
+          "destructured": true
+        }
+      ],
+      "description": "Legacy two-section loft from a bottom and a top cross section, with height, twist, and top scale. Prefer makeLoft for contour-mode lofts.",
+      "doc": "Legacy two-section loft from a bottom and a top cross section, with height, twist, and top scale. Prefer makeLoft for contour-mode lofts.",
+      "examples": [
+        "const cup = loft({ bottomCS, topCS, height: 30 });"
+      ]
+    },
+    {
+      "name": "sumSqDist",
+      "signature": "sumSqDist(cont1, cont2)",
+      "params": [
+        {
+          "name": "cont1",
+          "text": "cont1"
+        },
+        {
+          "name": "cont2",
+          "text": "cont2"
+        }
+      ],
+      "description": "Sum of squared distances between matched points of two loft contours.",
+      "doc": "Sum of squared distances between matched points of two loft contours.",
+      "examples": [
+        "const err = sumSqDist(a, b);"
+      ]
+    },
+    {
+      "name": "rotateContour",
+      "signature": "rotateContour(contour, deg)",
+      "params": [
+        {
+          "name": "contour",
+          "text": "contour"
+        },
+        {
+          "name": "deg",
+          "text": "deg"
+        }
+      ],
+      "description": "Rotate a loft contour so its start point best matches the previous section.",
+      "doc": "Rotate a loft contour so its start point best matches the previous section.",
+      "examples": [
+        "const turned = rotateContour(contour, pivot);"
+      ]
+    },
+    {
+      "name": "sweep",
+      "signature": "sweep(profile, path, options = {})",
+      "params": [
+        {
+          "name": "profile",
+          "text": "profile"
+        },
+        {
+          "name": "path",
+          "text": "path"
+        },
+        {
+          "name": "options",
+          "text": "options = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "Sweep a 2D profile along a 3D path Creates a 3D manifold by extruding a cross-section profile along a parametric path curve. ",
+      "doc": "Sweeps a 2D cross-section along a parametric 3D path using Frenet-Serret frames.\n\n\n**Parameters:**\n- `profile` - CrossSection to sweep (should be centered at origin)\n- `path` - Parametric path object:\n  - `position(t)` - Function returning [x, y, z] at parameter t (required)\n  - `derivative(t)` - Function returning first derivative (optional, computed numerically if omitted)\n  - `secondDerivative(t)` - Function returning second derivative (optional)\n  - `tMin` - Start parameter (default: 0)\n  - `tMax` - End parameter (default: 1)\n- `options` - Optional settings:\n  - `arcSamples` - Samples for arc-length table (default: 1000)\n  - `extrudeSegments` - Segments along extrusion (default: 64)\n  - `epsilon` - Delta for numerical derivatives (default: 1e-5)\n\n**Example - Trefoil Knot:**\n\n\n---",
+      "examples": [
+        "// Sweep a circle along a helix\nconst profile = CrossSection.circle(2, 32);\nconst helix = {\n  position: (t) => [20 * Math.cos(t), 20 * Math.sin(t), 5 * t],\n  tMin: 0,\n  tMax: 4 * Math.PI\n};\nreturn sweep(profile, helix);",
+        "const scale = 5;\nconst profile = CrossSection.circle(1, 32);\nconst trefoil = {\n  position: (t) => [\n    scale * (Math.sin(t) + 2 * Math.sin(2 * t)),\n    scale * (Math.cos(t) - 2 * Math.cos(2 * t)),\n    scale * (-Math.sin(3 * t))\n  ],\n  derivative: (t) => [\n    scale * (Math.cos(t) + 4 * Math.cos(2 * t)),\n    scale * (-Math.sin(t) + 4 * Math.sin(2 * t)),\n    scale * (-3 * Math.cos(3 * t))\n  ],\n  tMin: 0,\n  tMax: 2 * Math.PI\n};\nreturn sweep(profile, trefoil, { arcSamples: 2000, extrudeSegments: 128 });"
+      ]
+    },
+    {
+      "name": "sweepPoints",
+      "signature": "sweepPoints(profile, points, options = {})",
+      "params": [
+        {
+          "name": "profile",
+          "text": "profile"
+        },
+        {
+          "name": "points",
+          "text": "points"
+        },
+        {
+          "name": "options",
+          "text": "options = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "Sweep a profile along a path defined by an array of points Convenience wrapper for sweep() that accepts a polyline path. ",
+      "doc": "Sweeps a profile along a path defined by an array of points using Catmull-Rom spline interpolation.\n\n\n**Parameters:**\n- `profile` - CrossSection to sweep\n- `points` - Array of [x, y, z] coordinates defining the path (minimum 2 points)\n- `options` - Optional settings:\n  - `closed` - If true, creates a closed loop (default: false)\n  - Plus all options from `sweep()`\n\n**Example - Closed Loop:**\n\n\n---",
+      "examples": [
+        "// Sweep along a curved path\nconst profile = CrossSection.circle(2, 16);\nconst points = [\n  [0, 0, 0],\n  [20, 10, 0],\n  [40, 0, 20],\n  [60, -10, 20],\n  [80, 0, 0]\n];\nreturn sweepPoints(profile, points);",
+        "const profile = CrossSection.square([3, 3], true);\nconst ring = [\n  [30, 0, 0],\n  [0, 30, 10],\n  [-30, 0, 0],\n  [0, -30, 10]\n];\nreturn sweepPoints(profile, ring, { closed: true });"
+      ]
+    },
+    {
+      "name": "vecAdd",
+      "signature": "vecAdd(a, b)",
+      "params": [
+        {
+          "name": "a",
+          "text": "a"
+        },
+        {
+          "name": "b",
+          "text": "b"
+        }
+      ],
+      "description": "Add two 3-vectors.",
+      "doc": "Add two 3-vectors.",
+      "examples": [
+        "const p = vecAdd(a, b);"
+      ]
+    },
+    {
+      "name": "vecSub",
+      "signature": "vecSub(a, b)",
+      "params": [
+        {
+          "name": "a",
+          "text": "a"
+        },
+        {
+          "name": "b",
+          "text": "b"
+        }
+      ],
+      "description": "Subtract two 3-vectors.",
+      "doc": "Subtract two 3-vectors.",
+      "examples": [
+        "const d = vecSub(a, b);"
+      ]
+    },
+    {
+      "name": "vecMul",
+      "signature": "vecMul(s, v)",
+      "params": [
+        {
+          "name": "s",
+          "text": "s"
+        },
+        {
+          "name": "v",
+          "text": "v"
+        }
+      ],
+      "description": "Scale a 3-vector by a number.",
+      "doc": "Scale a 3-vector by a number.",
+      "examples": [
+        "const p = vecMul(v, 2);"
+      ]
+    },
+    {
+      "name": "vecDot",
+      "signature": "vecDot(a, b)",
+      "params": [
+        {
+          "name": "a",
+          "text": "a"
+        },
+        {
+          "name": "b",
+          "text": "b"
+        }
+      ],
+      "description": "Dot product of two 3-vectors.",
+      "doc": "Dot product of two 3-vectors.",
+      "examples": [
+        "const s = vecDot(a, b);"
+      ]
+    },
+    {
+      "name": "vecCross",
+      "signature": "vecCross(a, b)",
+      "params": [
+        {
+          "name": "a",
+          "text": "a"
+        },
+        {
+          "name": "b",
+          "text": "b"
+        }
+      ],
+      "description": "Cross product of two 3-vectors.",
+      "doc": "Cross product of two 3-vectors.",
+      "examples": [
+        "const n = vecCross(a, b);"
+      ]
+    },
+    {
+      "name": "vecNorm",
+      "signature": "vecNorm(v)",
+      "params": [
+        {
+          "name": "v",
+          "text": "v"
+        }
+      ],
+      "description": "Euclidean length of a 3-vector.",
+      "doc": "Euclidean length of a 3-vector.",
+      "examples": [
+        "const len = vecNorm(v);"
+      ]
+    },
+    {
+      "name": "vecNormalize",
+      "signature": "vecNormalize(v)",
+      "params": [
+        {
+          "name": "v",
+          "text": "v"
+        }
+      ],
+      "description": "Return the unit-length copy of a 3-vector.",
+      "doc": "Return the unit-length copy of a 3-vector.",
+      "examples": [
+        "const u = vecNormalize(v);"
+      ]
+    },
+    {
+      "name": "facesByNormal",
+      "signature": "facesByNormal(m, dir, tolDeg = 1)",
+      "params": [
+        {
+          "name": "m",
+          "text": "m"
+        },
+        {
+          "name": "dir",
+          "text": "dir"
+        },
+        {
+          "name": "tolDeg",
+          "text": "tolDeg = 1",
+          "default": "1"
+        }
+      ],
+      "description": "facesByNormal(m, dir, tolDeg=1) — faces whose normal is within tolDeg of dir. dir e.g. [0,0,1] (>Z) or [0,0,-1] (<Z).",
+      "doc": "**Parameters:**\n- `m` - The input manifold\n- `dir` - Target normal as `[x,y,z]` (e.g. `[0,0,1]` for `>Z`, `[0,0,-1]` for `<Z`)\n- `tolDeg` - Angular tolerance in degrees (default 1)\n\n**Returns:** Array of face objects `{ id, tris, normal, center, verts }`.",
+      "examples": [
+        "const topFaces = facesByNormal(part, [0, 0, 1]);      // all upward faces\nconst wall     = facesByNormal(part, [1, 0, 0])[0];   // a +X face"
+      ]
+    },
+    {
+      "name": "planarFaceAt",
+      "signature": "planarFaceAt(m, axis, value, tol = 1e-3)",
+      "params": [
+        {
+          "name": "m",
+          "text": "m"
+        },
+        {
+          "name": "axis",
+          "text": "axis"
+        },
+        {
+          "name": "value",
+          "text": "value"
+        },
+        {
+          "name": "tol",
+          "text": "tol = 1e-3",
+          "default": "1e-3"
+        }
+      ],
+      "description": "planarFaceAt(m, axis, value, tol=1e-3) — the face lying in plane axis==value (axis 'x'|'y'|'z'). ",
+      "doc": "planarFaceAt(m, axis, value, tol=1e-3) — the face lying in plane axis==value\n(axis 'x'|'y'|'z'). Returns null if absent, throws if ambiguous.",
+      "examples": [
+        "const top = planarFaceAt(part, 'z', 30);   // the face at z=30"
+      ]
+    },
+    {
+      "name": "edgesByOrientation",
+      "signature": "edgesByOrientation(m, axis, dir = null, tolDeg = 5)",
+      "params": [
+        {
+          "name": "m",
+          "text": "m"
+        },
+        {
+          "name": "axis",
+          "text": "axis"
+        },
+        {
+          "name": "dir",
+          "text": "dir = null",
+          "default": "null"
+        },
+        {
+          "name": "tolDeg",
+          "text": "tolDeg = 5",
+          "default": "5"
+        }
+      ],
+      "description": "edgesByOrientation(m, axis, dir, tolDeg=5) axis 'x'|'y'|'z' -> edges parallel to that axis dir 1 | -1 | null -> one-sided / both",
+      "doc": "edgesByOrientation(m, axis, dir, tolDeg=5)\n axis 'x'|'y'|'z'  -> edges parallel to that axis\n dir 1 | -1 | null -> one-sided / both",
+      "examples": [
+        "const vEdges = edgesByOrientation(part, 'z');      // all vertical edges"
+      ]
+    },
+    {
+      "name": "workplaneFromFace",
+      "signature": "workplaneFromFace(m, face)",
+      "params": [
+        {
+          "name": "m",
+          "text": "m"
+        },
+        {
+          "name": "face",
+          "text": "face"
+        }
+      ],
+      "description": "workplaneFromFace(m, face) -> { center, normal, x, y } Local 2D frame on the face. center = face centroid, normal = outward face normal, and the in-plane axes x,y are DETERMINISTIC + AXIS-ALIGNED so (u,v) map to predictable world directions (a transpiler/LLM can reason about t...",
+      "doc": "workplaneFromFace(m, face) -> { center, normal, x, y }\nLocal 2D frame on the face. center = face centroid, normal = outward face\nnormal, and the in-plane axes x,y are DETERMINISTIC + AXIS-ALIGNED so\n(u,v) map to predictable world directions (a transpiler/LLM can reason\nabout them):\n  x = the world axis most in-plane with the face (smallest |n·axis|),\n      ties broken by axis index (X > Y > Z); y = normal × x.\nSo: +Z face -> u→+X, v→+Y ; -Z -> u→+X, v→-Y ; +X -> u→+Y, v→+Z ;\n    -X -> u→+Y, v→-Z ; +Y -> u→+X, v→-Z ; -Y -> u→+X, v→+Z.\n(Non-axis-aligned faces, e.g. a 45° chamfer, fall back to the\nfirst-vertex direction.)\n(pass a face object from facesByNormal/planarFaceAt, or a face index into m)",
+      "examples": [
+        "const fr = workplaneFromFace(part, facesByNormal(part, [0,0,1])[0]);\n// fr.center, fr.normal, fr.x, fr.y"
+      ]
+    },
+    {
+      "name": "placeInFrame",
+      "signature": "placeInFrame(frame, solid, uvw = [0, 0, 0])",
+      "params": [
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "solid",
+          "text": "solid"
+        },
+        {
+          "name": "uvw",
+          "text": "uvw = [0, 0, 0]",
+          "default": "[0, 0, 0]"
+        }
+      ],
+      "description": "placeInFrame(frame, solid, uvw = [0, 0, 0]) Transform `solid` so its local origin lands at center + u·x + v·y + w·normal, axes aligned to (x, y, normal). `frame` is a PlaneFrame { center, normal, x, y } — never a Manifold. ",
+      "doc": "Places a solid on a **PlaneFrame** `{ center, normal, x, y }` (from\n`workplaneFromFace` / `makeCrossSection.plane` / default +Z). The solid's\nlocal origin lands at `center + u·x + v·y + w·normal`, axes aligned to\n`(x, y, normal)`. **Frame-only** — never a Manifold / cube / scaffold.\nDoes not take a host part. A first body assigns `let part = placeInFrame(…)`.\nAdvanced Confirm (Extrude / Revolve / Sweep / Loft), when `part` already\nexists, unions instead: `part = part.add(placeInFrame(…))`.\n`transformByFrame` is the same helper.",
+      "examples": [
+        "const fr = { center: [0, 0, 0], normal: [0, 0, 1], x: [1, 0, 0], y: [0, 1, 0] };\nconst xs = makeCrossSection(fr, profileCircle(5, 32));\npart = placeInFrame(xs.plane, makeExtrude(xs.contours, 10), [0, 0, 0]);"
+      ]
+    },
+    {
+      "name": "transformByFrame",
+      "signature": "transformByFrame(frame, solid, uvw = [0, 0, 0])",
+      "params": [
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "solid",
+          "text": "solid"
+        },
+        {
+          "name": "uvw",
+          "text": "uvw = [0, 0, 0]",
+          "default": "[0, 0, 0]"
+        }
+      ],
+      "description": "Alias — same frame-only replace transform as placeInFrame.",
+      "doc": "Places a solid on a **PlaneFrame** `{ center, normal, x, y }` (from\n`workplaneFromFace` / `makeCrossSection.plane` / default +Z). The solid's\nlocal origin lands at `center + u·x + v·y + w·normal`, axes aligned to\n`(x, y, normal)`. **Frame-only** — never a Manifold / cube / scaffold.\nDoes not take a host part. A first body assigns `let part = placeInFrame(…)`.\nAdvanced Confirm (Extrude / Revolve / Sweep / Loft), when `part` already\nexists, unions instead: `part = part.add(placeInFrame(…))`.\n`transformByFrame` is the same helper.",
+      "examples": [
+        "const fr = { center: [0, 0, 0], normal: [0, 0, 1], x: [1, 0, 0], y: [0, 1, 0] };\nconst xs = makeCrossSection(fr, profileCircle(5, 32));\npart = placeInFrame(xs.plane, makeExtrude(xs.contours, 10), [0, 0, 0]);"
+      ]
+    },
+    {
+      "name": "placeOnFace",
+      "signature": "placeOnFace(part, frame, builder)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "builder",
+          "text": "builder"
+        }
+      ],
+      "description": "placeOnFace(part, frame, builder) — run builder in the face's local frame. builder receives { Manifold: statics, frame, put } where put(m, [u,v,w]) returns m transformed so its local origin lands at center + u·x + v·y + w·normal (w is along the outward normal), with its local ...",
+      "doc": "placeOnFace(part, frame, builder) — run builder in the face's local frame.\nbuilder receives { Manifold: statics, frame, put } where put(m, [u,v,w])\nreturns m transformed so its local origin lands at\ncenter + u·x + v·y + w·normal (w is along the outward normal), with its\nlocal axes aligned to (x, y, normal). Lets scripts write axis-aligned\ngeometry for arbitrary face normals.\n\n`part` is unused (legacy host arg). New-body Confirm should assign\nplaceInFrame/transformByFrame instead of placeOnFace + part.add.",
+      "examples": [
+        "const fr = workplaneFromFace(part, facesByNormal(part, [0,0,1])[0]);\nconst rib = placeOnFace(part, fr, ({ put, Manifold }) =>\n  put(Manifold.cube([40, 4, 6], true), [0, 0, -3]));\nreturn Manifold.union(part, rib);"
+      ]
+    },
+    {
+      "name": "hole",
+      "signature": "hole(part, frame, u, v, dia, span)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "u",
+          "text": "u"
+        },
+        {
+          "name": "v",
+          "text": "v"
+        },
+        {
+          "name": "dia",
+          "text": "dia"
+        },
+        {
+          "name": "span",
+          "text": "span"
+        }
+      ],
+      "description": "hole(part, frame, u, v, dia, span) — cut a round hole through `part`. frame from workplaneFromFace; (u,v) local coords (mm), span = cut length along the outward normal from the face (use holeSpan() for full thickness). ",
+      "doc": "hole(part, frame, u, v, dia, span) — cut a round hole through `part`.\nframe from workplaneFromFace; (u,v) local coords (mm), span = cut length\nalong the outward normal from the face (use holeSpan() for full thickness).\nReturns the cut part.",
+      "examples": [
+        "const fr = workplaneFromFace(part, facesByNormal(part, [0,0,1])[0]);\npart = hole(part, fr, 10, 5, 6, holeSpan(part, fr));"
+      ]
+    },
+    {
+      "name": "holeSpan",
+      "signature": "holeSpan(part, frame)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        }
+      ],
+      "description": "holeSpan(part, frame) — full extent of the part measured along the frame normal (both directions from the face plane) + 2mm overshoot. ",
+      "doc": "holeSpan(part, frame) — full extent of the part measured along the frame\nnormal (both directions from the face plane) + 2mm overshoot. A safe\nfull-through cut length from that face.",
+      "examples": []
+    },
+    {
+      "name": "cboreHole",
+      "signature": "cboreHole(part, frame, u, v, diaThru, diaCbore, cboreDepth, span)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "u",
+          "text": "u"
+        },
+        {
+          "name": "v",
+          "text": "v"
+        },
+        {
+          "name": "diaThru",
+          "text": "diaThru"
+        },
+        {
+          "name": "diaCbore",
+          "text": "diaCbore"
+        },
+        {
+          "name": "cboreDepth",
+          "text": "cboreDepth"
+        },
+        {
+          "name": "span",
+          "text": "span"
+        }
+      ],
+      "description": "cboreHole(part, frame, u, v, diaThru, diaCbore, cboreDepth, span) — through hole + larger counterbore from the face. ",
+      "doc": "cboreHole(part, frame, u, v, diaThru, diaCbore, cboreDepth, span)\n— through hole + larger counterbore from the face. (CadQuery cboreHole)",
+      "examples": []
+    },
+    {
+      "name": "cskHole",
+      "signature": "cskHole(part, frame, u, v, diaThru, diaCsk, cskDepth, span)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "u",
+          "text": "u"
+        },
+        {
+          "name": "v",
+          "text": "v"
+        },
+        {
+          "name": "diaThru",
+          "text": "diaThru"
+        },
+        {
+          "name": "diaCsk",
+          "text": "diaCsk"
+        },
+        {
+          "name": "cskDepth",
+          "text": "cskDepth"
+        },
+        {
+          "name": "span",
+          "text": "span"
+        }
+      ],
+      "description": "cskHole(part, frame, u, v, diaThru, diaCsk, cskDepth, span) — through hole + cone countersink: the cone spans diaThru→diaCsk over cskDepth (118° style for cskDepth ≈ 1.17·(diaCsk−diaThru)/2). ",
+      "doc": "cskHole(part, frame, u, v, diaThru, diaCsk, cskDepth, span)\n— through hole + cone countersink: the cone spans diaThru→diaCsk over\ncskDepth (118° style for cskDepth ≈ 1.17·(diaCsk−diaThru)/2).\n(CadQuery cskHole)",
+      "examples": []
+    },
+    {
+      "name": "chamferEdges",
+      "signature": "chamferEdges(part, edges, c)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "edges",
+          "text": "edges"
+        },
+        {
+          "name": "c",
+          "text": "c"
+        }
+      ],
+      "description": "chamferEdges(part, edges, c) — equal-leg 45° chamfer c on a SET of straight convex edges. ",
+      "doc": "chamferEdges(part, edges, c) — equal-leg 45° chamfer c on a SET of straight\nconvex edges. Edges = objects from c4MeshData/convexEdges, or a plain\n[{va, vb, n0, n1}] array. n0/n1 (outward normals of the two adjacent faces\nat that edge) are REQUIRED for hand-built edges, but are AUTO-DERIVED from\nthe current mesh when the edge object carries {faces: [i0, i1]} (as all\nc4MeshData-based selectors do: convexEdges, edgesByOrientation,\nedgesByNormal, planarFaceAt-derived selections) — no more\n\"Cannot read properties of undefined (reading '0')\" when mixing selectors\nwith chamferEdges.\n\nConstruction (verified, C2 pilot + C4): per edge, cutter = hull of the two\nedge endpoints plus four corner points pulled c into each adjacent face\ninterior. c IS THE LEG LENGTH along each adjacent face (CAD \"C2\" = 2 mm\non both legs), NOT the perpendicular face offset — the perpendicular\noffset is derived from the face-to-face angle (offset = c·tan(θ/2), θ =\nangle between n0/n1; at a 90° corner they coincide, at a 120° hex-nut\ncorner C2 → 1.155 mm offset / 2 mm legs). CUTTERS ARE APPLIED SEQUENTIALLY (one difference per edge) and\neach intermediate result is checked: a single degenerate cutter (e.g. at\na triple-junction rib-base edge where the two \"adjacent faces\" are coplanar\nor the cutter self-intersects) must not be allowed to wedge the batch\nunion into a wasm out-of-bounds trap (observed: chamfering ALL convex\nedges of a ribbed plate — one subset crashes the kernel while the rest\nbuild fine). The first bad edge throws a named, actionable error instead.\nCost: n differences instead of 1 — fine for the edge counts these parts\nactually use (≤ ~30); the C8 timeout guard catches anything pathological.",
+      "examples": [
+        "part = chamferEdges(part, convexEdges(part), 2);"
+      ]
+    },
+    {
+      "name": "convexEdges",
+      "signature": "convexEdges(m, minAngleDeg = FEATURE_EDGE_MIN_DEG)",
+      "params": [
+        {
+          "name": "m",
+          "text": "m"
+        },
+        {
+          "name": "minAngleDeg",
+          "text": "minAngleDeg = FEATURE_EDGE_MIN_DEG",
+          "default": "FEATURE_EDGE_MIN_DEG"
+        }
+      ],
+      "description": "convexEdges(m, minAngleDeg) — genuine convex feature edges. ",
+      "doc": "Genuine straight convex edges: dihedral angle > `minAngleDeg` (filters\ncurved-face tessellation seams) and a ball-probe confirms the corner is\nconvex (not concave). Returns edge objects `{ va, vb, a, b, tris, tangent,\nfaces: [i0, i1], n0, n1 }` — `n0`/`n1` are the adjacent face normals and\n`faces` the face indices, so the result is ready for `chamferEdges`\n(normals auto-derived) and `filletEdges` as-is.",
+      "examples": [
+        "const vConvex = convexEdges(part).filter(e => Math.abs(e.tangent[2]) > 0.99);\npart = chamferEdges(part, vConvex, 0.5);   // chamfer only the vertical corners"
+      ]
+    },
+    {
+      "name": "concaveEdges",
+      "signature": "concaveEdges(m, minAngleDeg = FEATURE_EDGE_MIN_DEG)",
+      "params": [
+        {
+          "name": "m",
+          "text": "m"
+        },
+        {
+          "name": "minAngleDeg",
+          "text": "minAngleDeg = FEATURE_EDGE_MIN_DEG",
+          "default": "FEATURE_EDGE_MIN_DEG"
+        }
+      ],
+      "description": "concaveEdges(m, minAngleDeg) — genuine concave (interior) feature edges. ",
+      "doc": "concaveEdges(m, minAngleDeg) — genuine concave (interior) feature edges.\nRounding these is material ADD, not remove; see filletAlongPath.",
+      "examples": [
+        "const inner = concaveEdges(part);"
+      ]
+    },
+    {
+      "name": "signedFeatureEdges",
+      "signature": "signedFeatureEdges(m, minAngleDeg = FEATURE_EDGE_MIN_DEG)",
+      "params": [
+        {
+          "name": "m",
+          "text": "m"
+        },
+        {
+          "name": "minAngleDeg",
+          "text": "minAngleDeg = FEATURE_EDGE_MIN_DEG",
+          "default": "FEATURE_EDGE_MIN_DEG"
+        }
+      ],
+      "description": "Signed feature edges — convex AND concave, by a local winding test. ",
+      "doc": "Signed feature edges — convex AND concave, by a local winding test.\n\nSign: `dot(cross(n0, n1), dir) > 0` is convex, `< 0` is concave, where `dir`\nis the edge as wound in the triangle whose normal is n0. Winding is what\ncarries the inside/outside information; a dot product alone cannot tell a 90°\nconvex edge from a 270° concave one (they share the same normal angle).\n\nNormals come from the adjacent TRIANGLES, not the face groups: a face group's\nnormal is an area-weighted average, and on a curved group (a fillet sail) it\npoints nowhere near the local surface, which flips the cross product. Where a\ntriangle is a degenerate sliver — tessellated lofts carry hundreds — its\nnormal is meaningless, so the face-group normal stands in for it instead.\n\n`e.tris[i]` is the triangle belonging to face group `e.faces[i]`, so the\nsubstitution always pairs a triangle with its own group.",
+      "examples": [
+        "const edges = signedFeatureEdges(part);"
+      ]
+    },
+    {
+      "name": "holePattern",
+      "signature": "holePattern(part, frame, opts)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "opts",
+          "text": "opts"
+        }
+      ],
+      "description": "holePattern(part, frame, { n, m, spacingU, spacingV, dia, span, u0=0, v0=0 }) — linear grid of through holes (CadQuery rarray idiom). ",
+      "doc": "holePattern(part, frame, { n, m, spacingU, spacingV, dia, span, u0=0, v0=0 })\n— linear grid of through holes (CadQuery rarray idiom).\nGrid centered on the face center + (u0, v0) offset.",
+      "examples": [
+        "const fr = workplaneFromFace(part, facesByNormal(part, [0,0,1])[0]);\npart = holePattern(part, fr, { n: 3, m: 2, spacingU: 12, spacingV: 10, dia: 4 });"
+      ]
+    },
+    {
+      "name": "clearanceHole",
+      "signature": "clearanceHole(part, frame, u, v, size, spanOrOpts, fitArg)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "u",
+          "text": "u"
+        },
+        {
+          "name": "v",
+          "text": "v"
+        },
+        {
+          "name": "size",
+          "text": "size"
+        },
+        {
+          "name": "spanOrOpts",
+          "text": "spanOrOpts"
+        },
+        {
+          "name": "fitArg",
+          "text": "fitArg"
+        }
+      ],
+      "description": "clearanceHole(part, frame, u, v, size, spanOrOpts?, fit?) Cut a clearance hole for fastener `size` ('M3', 3, '#8-32', …). fit: 'close'|'normal'|'loose' (default 'normal'). span defaults to holeSpan(). ",
+      "doc": "Cut a **clearance** hole sized for fastener `size`. `size` accepts `'M3'`,\n`3`, `'M2.5'`, `'#8-32'`, `'1/4-20'`, etc. `fit` is `'close'|'normal'|'loose'`\n(aliases: tight/medium/coarse). `span` defaults to `holeSpan(part, frame)`.\nYou can also pass an options object as the 6th argument:\n`{ fit: 'close', span: 12 }`.\n\n\n\nThrows on unknown size/fit, non-positive derived diameter, bad frame, or empty /\nnon-manifold result.",
+      "examples": [
+        "const fr = workplaneFromFace(part, facesByNormal(part, [0,0,1])[0]);\npart = clearanceHole(part, fr, 10, 8, 'M3');                 // normal fit\npart = clearanceHole(part, fr, -10, 8, 'M4', undefined, 'close');\npart = clearanceHole(part, fr, 0, 0, 'M5', { fit: 'loose' });"
+      ]
+    },
+    {
+      "name": "tapDrillHole",
+      "signature": "tapDrillHole(part, frame, u, v, size, span)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "frame",
+          "text": "frame"
+        },
+        {
+          "name": "u",
+          "text": "u"
+        },
+        {
+          "name": "v",
+          "text": "v"
+        },
+        {
+          "name": "size",
+          "text": "size"
+        },
+        {
+          "name": "span",
+          "text": "span"
+        }
+      ],
+      "description": "tapDrillHole(part, frame, u, v, size, span?) Cut a tap-drill hole for fastener `size` (for subsequent tapping). span defaults to holeSpan().",
+      "doc": "tapDrillHole(part, frame, u, v, size, span?)\nCut a tap-drill hole for fastener `size` (for subsequent tapping).\nspan defaults to holeSpan().",
+      "examples": [
+        "const fr = workplaneFromFace(part, facesByNormal(part, [0,0,1])[0]);\npart = tapDrillHole(part, fr, 0, 0, 'M3');   // Ø2.5 for M3 coarse\npart = tapDrillHole(part, fr, 12, 0, '#8-32');"
+      ]
+    },
+    {
+      "name": "fastenerClearanceDia",
+      "signature": "fastenerClearanceDia(size, fit = 'normal')",
+      "params": [
+        {
+          "name": "size",
+          "text": "size"
+        },
+        {
+          "name": "fit",
+          "text": "fit = 'normal'",
+          "default": "'normal'"
+        }
+      ],
+      "description": "Clearance diameter (mm) for a fastener size + fit.",
+      "doc": "Return the clearance or tap-drill diameter in **mm** without cutting. Useful\nfor custom patterns:\n\n\n\n`listFastenerSizes()` → `{ metric: ['M1.6','M2',…], unc: ['#4-40',…] }`.\n\n---\n\n## Fillet Helper (C6)",
+      "examples": [
+        "const d = fastenerClearanceDia('M6', 'normal'); // 6.6\npart = holePattern(part, fr, { n: 2, m: 2, spacingU: 20, spacingV: 20, dia: d });"
+      ]
+    },
+    {
+      "name": "fastenerTapDrillDia",
+      "signature": "fastenerTapDrillDia(size)",
+      "params": [
+        {
+          "name": "size",
+          "text": "size"
+        }
+      ],
+      "description": "Tap-drill diameter (mm) for a fastener size.",
+      "doc": "Return the clearance or tap-drill diameter in **mm** without cutting. Useful\nfor custom patterns:\n\n\n\n`listFastenerSizes()` → `{ metric: ['M1.6','M2',…], unc: ['#4-40',…] }`.\n\n---\n\n## Fillet Helper (C6)",
+      "examples": [
+        "const d = fastenerClearanceDia('M6', 'normal'); // 6.6\npart = holePattern(part, fr, { n: 2, m: 2, spacingU: 20, spacingV: 20, dia: d });"
+      ]
+    },
+    {
+      "name": "fastenerMajorDia",
+      "signature": "fastenerMajorDia(size)",
+      "params": [
+        {
+          "name": "size",
+          "text": "size"
+        }
+      ],
+      "description": "Major / nominal diameter (mm).",
+      "doc": "Major / nominal diameter (mm).",
+      "examples": [
+        "const d = fastenerMajorDia('M4');"
+      ]
+    },
+    {
+      "name": "listFastenerSizes",
+      "signature": "listFastenerSizes()",
+      "params": [],
+      "description": "List the fastener size keys the clearance and tap-drill tables accept.",
+      "doc": "List the fastener size keys the clearance and tap-drill tables accept.",
+      "examples": [
+        "const sizes = listFastenerSizes();"
+      ]
+    },
+    {
+      "name": "resolveFastenerSize",
+      "signature": "resolveFastenerSize(size)",
+      "params": [
+        {
+          "name": "size",
+          "text": "size"
+        }
+      ],
+      "description": "Normalize a fastener size token to a table key + series. ",
+      "doc": "Normalize a fastener size token to a table key + series.\nAccepts: 'M3', 'm3', 3, '3', 'M2.5', 'M2_5', '#8-32', '1/4-20'.",
+      "examples": [
+        "const size = resolveFastenerSize('M3');"
+      ]
+    },
+    {
+      "name": "filletEdges",
+      "signature": "filletEdges(part, edgesIn, radiusIn, opts = {})",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "edgesIn",
+          "text": "edgesIn"
+        },
+        {
+          "name": "radiusIn",
+          "text": "radiusIn"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "filletEdges(part, edges, radius, opts) — circular fillet of radius r on a SET of straight convex edges. edges = objects from convexEdges() (required: they carry the mesh indices this helper needs; edges from OTHER selections can still be filleted if the edge object has {a, b, ...",
+      "doc": "Circular fillet of radius `r` on a **set** of straight convex edges\n(Manifold has no native fillet; this is a geometric construction).\n`edges` must come from `convexEdges()` (it needs the per-edge vertex\nindices to recover the in-face directions — and the in-face geometry, not\njust the normals, is what makes non-90° corners work). `radius` is a\nnumber (same `r` for all edges) or a `number[]` parallel to `edges`\n(per-edge radii). `opts` (optional): `{ sphericalCorners: true }`\n(see below).\n\n\n\n**How it works (per edge).** In the cross-section perpendicular to the\nedge, the two faces meet at interior angle θ. The fillet arc of radius `r`\nis tangent to both faces at distance `t = r/tan(θ/2)` from the corner,\ncentered on the interior angle bisector at `r/sin(θ/2)`. The removed\ncross-section is the sliver `r·t − ½·r²·(π−θ)` (= `r²(1−π/4)` at 90°).\nThe cutter is exactly `parallelepiped(t·f0, t·f1, edge) − cylinder(r)` —\nboth are exact primitives, so the result is geometrically exact for any\nθ. The in-face boundary directions `f0`/`f1` come from the adjacent\ntriangles' third vertices (robust to Manifold's `faceID` grouping, which\ncan merge faces from different planes into one). All cutters for the set\nare unioned and subtracted once, so shared-corner interactions resolve\nthrough the boolean — matching analytic inclusion-exclusion for adjacent\nedges (two cutters at a corner, three at a box corner).\n\n**Closed circular rims (v2, 2026-09-08).** A curved surface (a cylinder\nwall, a hole wall) meeting a planar face tessellates as a LOOP of many\nshort straight mesh edges — e.g. a Ø12 hole rim at 48 segments has\n~0.78mm segments. In v1 this loop was filleted PER SEGMENT, and any\nsegment failing the size guard below was silently skipped — for a real\nfillet radius (r=1 on that Ø12 rim, t=1 > 0.45·0.78mm) EVERY segment\nfailed, so the whole rim's fillet silently vanished with no error. v2\ndetects a maximal chain of input edges that (a) share consecutive mesh\nvertices, (b) turn ≤30° at each shared vertex (a genuine polygon corner\nturns 60-180°; a tessellated circle turns 360/segs°, well under 30° for\nany segs≥12), and (c) keep the same interior angle θ (within 3°) and the\nsame radius. If that chain closes into a loop AND fits an exact circle\n(3-point circumcircle, verified against every other vertex in the run),\nthe WHOLE rim is filleted as one exact revolved cutter — the same 2D\ncorner-sliver cross-section swept a full 360° around the rim's own axis\n— instead of per-segment boxes, so the old per-segment size guard does\nnot apply to it at all. `convexEdges(part)` (unfiltered, or filtered only\nby position/orientation — do NOT filter out short segments) is the\ncorrect input; a \"filter out the tiny seam edges\" workaround is no longer\nnecessary or correct for a genuine curved rim. If a chain doesn't close,\nor doesn't fit a clean circle (mixed/non-circular topology), filletEdges\nfalls back to the v1 per-edge construction for every edge in that chain,\nincluding the size guard below — so isolated straight edges and\nnon-circular chains behave exactly as before.\n\n**Constraints (v1 per-edge path — still the fallback for singleton edges\nand non-circular chains).**\n- **Planar faces only** — each adjacent face must be planar at the edge\n  (checked: all same-face neighbor triangles coplanar within 1e-3). A\n  fillet touching a curved face **throws** for a SINGLETON edge. (A\n  successfully-fit closed circular run skips this check entirely — the\n  circle fit plus per-vertex on-circle verification is a strictly more\n  specific validity proof for \"this chain is one smooth curved feature\"\n  than the singleton check, which was never designed to look past one\n  edge.)\n- **Convex edges only** — concave corners (rounding = adding material)\n  throw. `convexEdges()` already filters these out; passing them directly\n  also throws via the ball probe. (Applies to every edge, run or not.)\n- **Size guard** — for a SINGLETON edge (or an edge in a chain that didn't\n  qualify as a closed circular run), `r` must satisfy `t < 0.45·L` where\n  `L` is the edge length; individual edges that FAIL this guard are\n  **skipped** when other edges still produce cutters. If **every** requested\n  edge is skipped / rejected, `filletEdges` **throws** (no silent unchanged\n  part). Closed-circular-run members are exempt — their per-segment `L` is a\n  tessellation artifact, not a signal that the feature is too small.\n- **Arc tessellation** — a SINGLETON edge's fillet arc is an inscribed\n  384-gon: the result volume sits at most `L·(π−(n/2)·sin(2π/n))·r²` BELOW\n  the circle-exact value per edge. A closed run's revolve resolution is\n  tied to the rim's own mesh segment count exactly (verified necessary\n  for a numerically clean boolean: Manifold's boolean difference between\n  the original n-segment part and a cutter revolved at a DIFFERENT\n  segment count — even a clean integer multiple of n — silently removes\n  LESS than the cutter's own volume), with a separately-tunable, finer\n  resolution for the small fillet arc itself.\n- **Known gaps** — an OPEN curved run (a fillet on a less-than-360° arc)\n  does not get the closed-run treatment and can still lose short segments\n  to the size guard; not exercised by any part in the current corpus\n  (every curved surface here comes from a full-revolution primitive). A\n  closed-run cutter throws (rather than silently clipping) if `r` is so\n  large the fillet would revolve through the rim's own axis.\n\n**Spherical corner caps** (`opts.sphericalCorners: true`). Three fillets\nmeeting at a box corner converge to a sharp cusp point — the plain\nresult is a valid but pointy corner. With this option the cusp pocket is\ncut away by a ball of radius `r` centered on the trihedral incenter\n(equidistant `r` from all three faces and lying ON all three fillet\ncylinder axes), leaving a spherical corner patch that is tangent to each\nfillet sail along a circle (C1 junction) and to each face at one point —\ni.e. the true CAD r/r/r rounded corner. v1 scope: applies only at\nvertices where exactly THREE filleted edges meet at ~90° with EQUAL\nradii; other corners keep the cusp, and non-triple corners are\nunaffected (the option is a no-op on an edge set whose corners have\nfewer than three fillets).\n\n**Verified** against analytic volumes: single edge, 4 top edges, all 12\nbox edges (pair + triple corner overlaps), an obtuse wedge (90°/116°/153°\ncorners), and mixed per-edge radii — see `cadgen-workspace/reports/c6-report.md`.\n\n---\n\n\n---\n\n## Cross-section substrate (Slice 21)\n\nReusable **plane + 2D profile** value for later edge→sweep path,\nfillet-via-sweep, then extrude/revolve/loft siblings. This slice ships the\nsubstrate only — those followers are **not** started here.\n\nPlane comes from `workplaneFromFace` (primary mobile path: selected planar\nface). Profile is a light 2D shape in plane UV. The returned value is a plain\nobject (no class inheritance):",
+      "examples": [
+        "// round all 12 box corners at r=3\npart = filletEdges(part, convexEdges(part), 3);\n\n// fillet only the 4 vertical corners, mixed radii per edge\nconst vert = convexEdges(part).filter(e => Math.abs(e.tangent[2]) > 0.99);\npart = filletEdges(part, vert, [3, 3, 5, 5]);\n\n// fully-rounded box corners: r=5 fillets + spherical corner patches\npart = filletEdges(part, convexEdges(part), 5, { sphericalCorners: true });",
+        "{\n  kind: 'crossSection',\n  plane: { center, normal, x, y },  // workplaneFromFace frame\n  profile: { type: 'circle'|'rectangle'|'polygon', ... },\n  contours: [ [[u,v], ...] ],       // ready for makeExtrude / sweep later\n}"
+      ]
+    },
+    {
+      "name": "makeRevolve",
+      "signature": "makeRevolve(contours, segments = 96, degrees = 360)",
+      "params": [
+        {
+          "name": "contours",
+          "text": "contours"
+        },
+        {
+          "name": "segments",
+          "text": "segments = 96",
+          "default": "96"
+        },
+        {
+          "name": "degrees",
+          "text": "degrees = 360",
+          "default": "360"
+        }
+      ],
+      "description": "makeRevolve(contours, segments=96, degrees=360) — revolve a 2D profile around its Y axis (result's axis = Z). contours = [[x,y]...] outer first + optional holes; winding is normalized automatically; throws loudly on an invalid profile instead of returning a silent empty manifo...",
+      "doc": "Revolve a 2D profile around its **Y** axis → result axis = **Z**.\n`contours` = `[[x,y]...]` outer first + optional hole contours after;\nwinding is **auto-normalized** (outermost CCW, holes CW) — do NOT hand-roll\n`new CrossSection(...).revolve()` and fight winding yourself (wrong winding\nfails silently in raw CrossSection). Profile: **x = radial distance (≥ 0),\ny = height along the axis**. If a polygon crosses the Y-axis, only the\npositive-X side is used (Manifold clip). `degrees` is the sweep (default\n360, must be > 0 and ≤ 360). Throws a named error on an invalid profile\ninstead of returning a silent empty manifold.",
+      "examples": [
+        "// revolved flange ⌀90×10 + boss ⌀30 base, 30 tall — one closed silhouette\nlet part = makeRevolve([ [[0,0],[45,0],[45,10],[15,10],[15,30],[0,30]] ], 96);\n\n// hollow tube OD40 ID28 × 30: outer contour + inner (through) contour\nconst tube = makeRevolve([ [[0,0],[20,0],[20,30],[0,30]],\n                           [[14,0],[14,30],[20,30],[20,0]] ], 64);"
+      ]
+    },
+    {
+      "name": "makeExtrude",
+      "signature": "makeExtrude(contours, height)",
+      "params": [
+        {
+          "name": "contours",
+          "text": "contours"
+        },
+        {
+          "name": "height",
+          "text": "height"
+        }
+      ],
+      "description": "makeExtrude(contours, height) — extrude a 2D profile by `height` along Z. ",
+      "doc": "Extrude a 2D profile by `height` along +Z. Same contour rules as\nmakeRevolve (outer + optional holes, winding auto-fixed).\n\n\n\n**Contour-mode Extrude (Slice 25):** game-mode **Extrude** builds a profile on\nthe workplane, then Confirm emits:\n\n\n\n`height` is always > 0. When `part` already exists, Advanced Confirm is\nadditive (`part.add` of the placed solid). An empty script still uses\n`let part = placeInFrame(...)`. Sense **In** uses `w = −height`; **Both** uses\n`w = −height/2`. Direction defaults to the plane normal; a world axis is\nrefused unless it is parallel to that normal. Loud-fail on a bad plane,\nprofile, or distance.\n\n**Contour-mode Revolve (Slice 26):** game-mode **Revolve** builds a profile on\nthe workplane, then Confirm emits `makeCrossSection` + `makeRevolve` placed\nso the axis lies **on the profile plane** (default: along V). The profile\nis remapped with identity `(u,v)→(radial,height)` in the axis/radial basis\n(axis through the workplane origin). A centered circle therefore revolves\nabout a diameter — a sphere. Profiles that cross the axis are clipped to\n+radial (`makeRevolve` / Manifold); on-axis, zero-width, and entirely\n−radial profiles loud-fail.\n\n\n\n`angle` is always > 0 and ≤ 360 (default 360). Sense **In** starts at\n`−angle`; **Both** starts at `−angle/2`. Axis defaults to plane **V**; a\nworld axis is refused unless it lies on the profile plane. Loud-fail on a\nbad plane, profile, angle, or an on-axis / zero-width / entirely-negative\nradial profile.",
+      "examples": [
+        "const plate = makeExtrude([ [[-40,-15],[40,-15],[40,15],[-40,15]] ], 3);",
+        "const fr = { center: [0, 0, 0], normal: [0, 0, 1], x: [1, 0, 0], y: [0, 1, 0] };\nconst xs = makeCrossSection(fr, profileCircle(5, 32));\npart = placeInFrame(xs.plane, makeExtrude(xs.contours, 10), [0, 0, 0]);\n// when part already exists, Confirm unions instead of replacing:\n// part = part.add(placeInFrame(xs.plane, makeExtrude(xs.contours, 10), [0, 0, 0]));",
+        "const fr = { center: [0, 0, 0], normal: [0, 0, 1], x: [1, 0, 0], y: [0, 1, 0] };\nconst xs = makeCrossSection(fr, profileCircle(5, 32));\npart = placeInFrame({\n  center: xs.plane.center,\n  x: xs.plane.x, y: xs.plane.normal, normal: xs.plane.y,\n}, makeRevolve(xs.contours.map((ring) => ring.map(([u, v]) => [u, v])), 96, 360));"
+      ]
+    },
+    {
+      "name": "makeLoft",
+      "signature": "makeLoft(sections, opts = {})",
+      "params": [
+        {
+          "name": "sections",
+          "text": "sections"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "makeLoft(sections, opts?) — loft ≥2 makeCrossSection values. v1: parallel planes (same workplane + offset along the normal). ",
+      "doc": "Loft ≥2 `makeCrossSection` values into a solid. **v1 plane model:** all\nplanes must be parallel (same workplane + per-profile offset along the\nnormal). `offsetPlaneFrame(plane, offset)` copies a PlaneFrame and translates\n`center` by `offset * normal`. The solid is **local** (XY = station UV, Z\nalong the shared normal, z=0 at the lowest station) — Confirm places it with\n`placeInFrame`. The legacy `loft({ topCS, bottomCS, height })` cup helper is\nunchanged.\n\n\n\n**Contour-mode Loft (Slice 28):** game-mode **Loft** builds a multi-profile\nlist on the shared workplane (min 2, default circle r=5 @ 0 and circle r=8\n@ 20). Circle / rect / polygon / polyline edit the selected profile. Confirm\nemits one `makeCrossSection` per station (`offsetPlaneFrame` + profile) plus\n`makeLoft`, then `part = placeInFrame(frame, makeLoft(…))` (replace, no host\nadd / no starter cube). Second Confirm replaces the same marked block.\n**Back** exits with no commit. Live preview skins the stations as offsets /\nshapes change.\n\n**Loud failures:** < 2 profiles; coincident station offsets (zero-height);\nnon-parallel planes; degenerate / empty contours; empty result volume.\nNever a silent wrong solid.\n\n`opts.align` (default true) matches cornered stations by their outermost\nvertex angle (a 45° copy of the same rectangle un-rotates back to a prism).\nA nearly circular station does **not** spin the other profile — that was\nthe off-angle circle↔rectangle default. `opts.resolution` (default 64) feeds\nthe polar sample count. The warp builds an **angle-indexed table**: uniform\nangles, arc-length samples, and every profile vertex angle, then ray-hits\neach station. Rectangle corners are table entries, so a circle’s chords no\nlonger bite them. Legacy `loft({ topCS, bottomCS, height })` is unchanged.\n\n**Default contour plane** (no face and no saved workplane) is world **+Z**\nwith **X/Y** axes — the standard views. A picked face or construction\nworkplane still supplies the frame. Angle sliders in the contour chip rotate\nthat frame; Confirm uses the edited plane.\n\n**Workplane** (Advanced) inserts a literal PlaneFrame\n`{ center, normal, x, y }` — a rendered, selectable construction plane.\nIt does **not** create a host cube. Tapping it on an empty script leaves\nthe viewport empty of solids (the plane overlay remains).\n\n**Blank run:** an empty, whitespace, or comment-only script (and a\nconstruction-plane-only script) clears the 3D view. Undo back to a blank\nbuffer does not keep the previous solid. A failed non-empty script still\nrestores the last good mesh.\n\n**Rules for both:**\n- `contours` is an **array of contours** `[outer, hole1, ...]`; a single\n  solid can be written as `[...pts]` (bare point list) — both accepted.\n- Every contour needs **≥ 3 distinct points**, closed polygon (auto-closed\n  if first ≠ last). Open polylines / 2-point lists throw.\n- For a **hollow** part: outer contour + inner contour (through-hole).\n- Invalid profile → **named throw** (never a silent empty).\n\n---\n\n## Example: Complex Part\n\n\n\n## Security Notes\n\nScripts run in an isolated Web Worker sandbox with:\n- No network access (fetch, XMLHttpRequest, WebSocket blocked)\n- No storage access (indexedDB, localStorage blocked)\n- No worker spawning\n- Memory limits enforced\n- Execution timeout enforced\n\nImported models are available via `window.__importedManifolds['filename']`.",
+      "examples": [
+        "const fr = { center: [0, 0, 0], normal: [0, 0, 1], x: [1, 0, 0], y: [0, 1, 0] };\nconst xs0 = makeCrossSection(fr, profileCircle(5, 32));\nconst xs1 = makeCrossSection(offsetPlaneFrame(fr, 20), profileCircle(8, 32));\npart = placeInFrame(fr, makeLoft([xs0, xs1]));",
+        "// Create a flanged tube with mounting holes\n\n// Main tube\nconst mainTube = tube(15, 12, 40, 64);\n\n// Bottom flange\nconst flange = Manifold.cylinder(5, 25, 25, 64);\n\n// Mounting holes in flange\nconst bore = Manifold.cylinder(10, 3, 3, 32);\nconst holes = polarArray(bore, 4, 20, 'z');\n\n// Combine\nlet part = mainTube.add(flange);\npart = part.subtract(holes);\n\n// Center and align bottom to Z=0\npart = center(part, [true, true, false]);\npart = align(part, { min: [undefined, undefined, 0] });\n\nreturn part;"
+      ]
+    },
+    {
+      "name": "offsetPlaneFrame",
+      "signature": "offsetPlaneFrame(plane, offset)",
+      "params": [
+        {
+          "name": "plane",
+          "text": "plane"
+        },
+        {
+          "name": "offset",
+          "text": "offset"
+        }
+      ],
+      "description": "Copy of a workplane translated along its normal. ",
+      "doc": "Loft ≥2 `makeCrossSection` values into a solid. **v1 plane model:** all\nplanes must be parallel (same workplane + per-profile offset along the\nnormal). `offsetPlaneFrame(plane, offset)` copies a PlaneFrame and translates\n`center` by `offset * normal`. The solid is **local** (XY = station UV, Z\nalong the shared normal, z=0 at the lowest station) — Confirm places it with\n`placeInFrame`. The legacy `loft({ topCS, bottomCS, height })` cup helper is\nunchanged.\n\n\n\n**Contour-mode Loft (Slice 28):** game-mode **Loft** builds a multi-profile\nlist on the shared workplane (min 2, default circle r=5 @ 0 and circle r=8\n@ 20). Circle / rect / polygon / polyline edit the selected profile. Confirm\nemits one `makeCrossSection` per station (`offsetPlaneFrame` + profile) plus\n`makeLoft`, then `part = placeInFrame(frame, makeLoft(…))` (replace, no host\nadd / no starter cube). Second Confirm replaces the same marked block.\n**Back** exits with no commit. Live preview skins the stations as offsets /\nshapes change.\n\n**Loud failures:** < 2 profiles; coincident station offsets (zero-height);\nnon-parallel planes; degenerate / empty contours; empty result volume.\nNever a silent wrong solid.\n\n`opts.align` (default true) matches cornered stations by their outermost\nvertex angle (a 45° copy of the same rectangle un-rotates back to a prism).\nA nearly circular station does **not** spin the other profile — that was\nthe off-angle circle↔rectangle default. `opts.resolution` (default 64) feeds\nthe polar sample count. The warp builds an **angle-indexed table**: uniform\nangles, arc-length samples, and every profile vertex angle, then ray-hits\neach station. Rectangle corners are table entries, so a circle’s chords no\nlonger bite them. Legacy `loft({ topCS, bottomCS, height })` is unchanged.\n\n**Default contour plane** (no face and no saved workplane) is world **+Z**\nwith **X/Y** axes — the standard views. A picked face or construction\nworkplane still supplies the frame. Angle sliders in the contour chip rotate\nthat frame; Confirm uses the edited plane.\n\n**Workplane** (Advanced) inserts a literal PlaneFrame\n`{ center, normal, x, y }` — a rendered, selectable construction plane.\nIt does **not** create a host cube. Tapping it on an empty script leaves\nthe viewport empty of solids (the plane overlay remains).\n\n**Blank run:** an empty, whitespace, or comment-only script (and a\nconstruction-plane-only script) clears the 3D view. Undo back to a blank\nbuffer does not keep the previous solid. A failed non-empty script still\nrestores the last good mesh.\n\n**Rules for both:**\n- `contours` is an **array of contours** `[outer, hole1, ...]`; a single\n  solid can be written as `[...pts]` (bare point list) — both accepted.\n- Every contour needs **≥ 3 distinct points**, closed polygon (auto-closed\n  if first ≠ last). Open polylines / 2-point lists throw.\n- For a **hollow** part: outer contour + inner contour (through-hole).\n- Invalid profile → **named throw** (never a silent empty).\n\n---\n\n## Example: Complex Part\n\n\n\n## Security Notes\n\nScripts run in an isolated Web Worker sandbox with:\n- No network access (fetch, XMLHttpRequest, WebSocket blocked)\n- No storage access (indexedDB, localStorage blocked)\n- No worker spawning\n- Memory limits enforced\n- Execution timeout enforced\n\nImported models are available via `window.__importedManifolds['filename']`.",
+      "examples": [
+        "const fr = { center: [0, 0, 0], normal: [0, 0, 1], x: [1, 0, 0], y: [0, 1, 0] };\nconst xs0 = makeCrossSection(fr, profileCircle(5, 32));\nconst xs1 = makeCrossSection(offsetPlaneFrame(fr, 20), profileCircle(8, 32));\npart = placeInFrame(fr, makeLoft([xs0, xs1]));",
+        "// Create a flanged tube with mounting holes\n\n// Main tube\nconst mainTube = tube(15, 12, 40, 64);\n\n// Bottom flange\nconst flange = Manifold.cylinder(5, 25, 25, 64);\n\n// Mounting holes in flange\nconst bore = Manifold.cylinder(10, 3, 3, 32);\nconst holes = polarArray(bore, 4, 20, 'z');\n\n// Combine\nlet part = mainTube.add(flange);\npart = part.subtract(holes);\n\n// Center and align bottom to Z=0\npart = center(part, [true, true, false]);\npart = align(part, { min: [undefined, undefined, 0] });\n\nreturn part;"
+      ]
+    },
+    {
+      "name": "sheetMetalSolid",
+      "signature": "sheetMetalSolid(spec)",
+      "params": [
+        {
+          "name": "spec",
+          "text": "spec"
+        }
+      ],
+      "description": "sheetMetalSolid(spec) — SendCutSend sheet-metal part from its JSON spec (base flange, bends, tabs, holes, automatic corner reliefs). ",
+      "doc": "sheetMetalSolid(spec) — SendCutSend sheet-metal part from its JSON spec\n(base flange, bends, tabs, holes, automatic corner reliefs). Written by\nSheet Metal mode inside the sheet-metal markers; see utils/sheetMetal.",
+      "examples": [
+        "let part = sheetMetalSolid(sheetSpec);"
+      ]
+    },
+    {
+      "name": "profileCircle",
+      "signature": "profileCircle(radius, segments = 32)",
+      "params": [
+        {
+          "name": "radius",
+          "text": "radius"
+        },
+        {
+          "name": "segments",
+          "text": "segments = 32",
+          "default": "32"
+        }
+      ],
+      "description": "profileCircle(radius, segments=32) → { type:'circle', radius, segments, contours } Contours centered at UV origin — enough for basic extrude / future fillet.",
+      "doc": "profileCircle(radius, segments=32) → { type:'circle', radius, segments, contours }\nContours centered at UV origin — enough for basic extrude / future fillet.",
+      "examples": [
+        "const p = profileCircle(5, 32);"
+      ]
+    },
+    {
+      "name": "profileRectangle",
+      "signature": "profileRectangle(width, height, centered = true)",
+      "params": [
+        {
+          "name": "width",
+          "text": "width"
+        },
+        {
+          "name": "height",
+          "text": "height"
+        },
+        {
+          "name": "centered",
+          "text": "centered = true",
+          "default": "true"
+        }
+      ],
+      "description": "profileRectangle(width, height, centered=true) → rectangle profile in UV.",
+      "doc": "profileRectangle(width, height, centered=true) → rectangle profile in UV.",
+      "examples": [
+        "const p = profileRectangle(20, 12, true);"
+      ]
+    },
+    {
+      "name": "profilePolygon",
+      "signature": "profilePolygon(points)",
+      "params": [
+        {
+          "name": "points",
+          "text": "points"
+        }
+      ],
+      "description": "profilePolygon(points) → closed polyline/polygon profile in UV. ",
+      "doc": "Simple closed polyline / polygon (≥ 3 `[u,v]` points; explicit close optional;\nwinding normalized CCW). Enough for a quarter-circle fillet profile:",
+      "examples": [
+        "const r = 3;\nconst filletProf = profilePolygon([\n  [0, 0], [r, 0],\n  [r * Math.cos(Math.PI / 4), r * Math.sin(Math.PI / 4)],\n  [0, r],\n]);"
+      ]
+    },
+    {
+      "name": "makeCrossSection",
+      "signature": "makeCrossSection(plane, profile)",
+      "params": [
+        {
+          "name": "plane",
+          "text": "plane"
+        },
+        {
+          "name": "profile",
+          "text": "profile"
+        }
+      ],
+      "description": "makeCrossSection(plane, profile) → reusable { kind, plane, profile, contours }. plane: workplaneFromFace frame. profile: profileCircle/Rectangle/Polygon result, or { type, ... }, or bare contours / point list (same rules as makeExtrude). ",
+      "doc": "**Parameters:**\n- `plane` — frame from `workplaneFromFace` (`center`, `normal`, `x`, `y`)\n- `profile` — `profileCircle` / `profileRectangle` / `profilePolygon` result,\n  a `{ type, ... }` descriptor, or a contours / point list (same rules as\n  `makeExtrude`)\n\n**Returns:** `{ kind:'crossSection', plane, profile, contours }`\n\n**Loud failures:** missing plane axes; non-positive sizes; < 3 polygon points;\ndegenerate (zero-area) profile.\n\n**UI:** Advanced rail → **Profile** (with **Workplane**) → contour mode\n(circle / rectangle / polygon / polyline). Face select feeds the plane.\nSaved contours stay pickable for Extrude / Revolve / Sweep / Loft. Preview\noverlays the profile on the plane while editing.\n\n**Non-goals (wait for Product brief):** fillet-via-sweep;\nextrude/revolve/loft from this value; full sketch editor.\n(Edge→sweep path is Slice 22 — see below.)\n\n---\n\n## Edge → sweep path (Slice 22)\n\nOrdered **sweep path / wire** from the current edge selection (including\ntangent-prop chains). Later slices consume this value to sweep a cross-section\ncutter along it. This slice ships the path value only — fillet-via-sweep is\n**not** started here (wait for Product brief).",
+      "examples": [
+        "let part = Manifold.cube([40, 30, 20], true);\nconst topFace = facesByNormal(part, [0, 0, 1])[0];\nconst fr = workplaneFromFace(part, topFace);\nconst xs = makeCrossSection(fr, profileCircle(5, 32));\n// xs.plane / xs.profile / xs.contours — consume in later slices\nreturn part;",
+        "{\n  kind: 'sweepPath',\n  closed: false,                 // true for circular / loop selections\n  points: [ [x,y,z], ... ],      // ordered polyline (closed: first ≠ last)\n  length: 40,                    // total path length\n  edgeCount: 3,\n}"
+      ]
+    },
+    {
+      "name": "makeSweepPath",
+      "signature": "makeSweepPath(edges, opts = {})",
+      "params": [
+        {
+          "name": "edges",
+          "text": "edges"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "makeSweepPath(edges, opts?) → reusable ordered sweep path / wire. edges: feature / convexEdges-style {a,b,va,vb,...} (selection or query). ",
+      "doc": "**Parameters:**\n- `edges` — array of feature edges `{ a, b, va, vb, length?, key? }` (from\n  `convexEdges` / Edge pick selection)\n- `opts.reverse` — optional; reverse polyline direction\n\n**Returns:** `{ kind:'sweepPath', closed, points, length, edgeCount }`\n\n**Loud failures (script):** empty / unusable edges; disconnected selection;\nbranched junctions; walk failure.\n\n**UI:** FEAT rail → **Path** → param popup (Body, Reverse). Uses current Edge\nselection + Tangent chip. Viewport preview shows order/direction (green→magenta\ngradient polyline, chevron arrows, start/end markers) — distinct from the\norange #20 selection halo. Auto-Run unchanged.\n\n**Non-goals (Slice 22):** fillet-via-sweep shipped in Slice 23; extrude/revolve/loft\nstill wait for Product brief; Profile API changes; full sketcher; C6 soft counters.\n\n\n---\n\n## Fillet via swept cross-section (Slice 23)\n\nUnlock fillets on **compound / curved-adjacent** edges (cases where C6\n`filletEdges` throws `curved-face fillet not supported`, e.g. post-fillet seams\nor when you prefer Path-driven construction) by sweeping a cutter along\n`makeSweepPath` and boolean-subtracting.",
+      "examples": [
+        "let part = Manifold.cube([40, 30, 20], true);\nconst top = facesByNormal(part, [0, 0, 1])[0];\nconst fr = workplaneFromFace(part, top);\n// Script path: pass convexEdges (or a filtered subset) — UI emits mid-matched selection.\nconst rim = convexEdges(part); // or selected edges from Edge pick + Tangent\nconst path = makeSweepPath(rim); // { kind:'sweepPath', closed, points, length, edgeCount }\n// Later: sweepPoints(profile, path.points, { closed: path.closed })\nreturn part;"
+      ]
+    },
+    {
+      "name": "filletAlongPath",
+      "signature": "filletAlongPath(part, path, radius, opts = {})",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "path",
+          "text": "path"
+        },
+        {
+          "name": "radius",
+          "text": "radius"
+        },
+        {
+          "name": "opts",
+          "text": "opts = {}",
+          "default": "{}"
+        }
+      ],
+      "description": "filletAlongPath(part, path, radius, opts?) Sweep a dihedral fillet (or equal-leg chamfer) along path → boolean subtract. ",
+      "doc": "**Parameters:**\n- `part` — manifold body\n- `path` — `makeSweepPath` result, `{ points, closed }`, or `points[]` (+ `opts.closed`)\n- `radius` — fillet radius, or chamfer leg length (> 0)\n- `opts.profile` — `'fillet'` (default) or `'chamfer'`\n- `opts.segments` — arc segments for the fillet profile (default 12)\n- `opts.initialNormal` — optional. When set, keeps the legacy 90° wedge and a single start-frame RMF. Leave unset for the dihedral cutter.\n- `opts.arcSamples` / `opts.extrudeSegments` — legacy RMF sweep quality only\n\n**Path / cutter:** open chains sweep the wedge along a **linear polyline** of the\nedge wire (not Catmull-Rom — spline bulge left purple scraps). Closed paths that\nfit a circle use a **revolved meridian wedge** (C6-style, phase-locked to the\ntessellation). **Fillet-on-fillet / path on a prior blend:** keep the full wire,\nincluding tessellated micro rim arcs — do **not** skip those segments (skipping\nleft a gap instead of wrapping the prior fillet). The quarter-circle / chamfer\ncutter origin is pushed into a rear exterior bumper `(−e,−e)` plus thickness-`e`\nstrips so the boolean consumes coincident sliver sheets **without growing the\nrequested blend** (realized first-quadrant extent stays at `r`). Mixed-radius /\ntighter follow-on sweeps use a deeper rear pad than the original 4%·r sliver.\nDisconnected cutter scraps are dropped via `decompose` when present.\nLoud-fail if the kept solid is still scrap-sheet dirty.\n\n**Dihedral cutter:** each path segment is probed from the two adjacent triangles\n(in-face rays from the third vertices — not face normals, not faceID groups).\n`N` lies in one face, `B = T×N` points toward the other, and the profile is built\nfor that interior angle θ: fillet setback `t = r/tan(θ/2)`, removed area\n`r·t − ½·r²·(π−θ)` (at 90° this is `r²(1−π/4)`); chamfer area `½·c²·sin θ`\n(at 90° this is `½·c²`). Segments whose θ stays within 3° share one profile and\nare swept with those per-segment frames. A smooth segment that is not a convex\nedge keeps the neighboring frame, so a compound chain can still sweep. A closed run that fits a circle is\nrevolved. `opts.initialNormal` is the only path that still uses a 90° wedge and\none start-frame RMF. The exterior bumper still keeps cutter legs off the faces;\nat 90° it matches the old `(−e,−e)` pad.",
+      "examples": [
+        "let part = Manifold.cube([40, 30, 20], true);\n// Planar–planar (unchanged):\nconst e = convexEdges(part).filter(/* … */);\npart = filletEdges(part, e, 3, { sphericalCorners: true });\n\n// Sweep fillet (curved-adjacent / closed rim / post-fillet seam):\nconst rim = /* Edge pick + Tangent → selection, or convexEdges subset */;\nconst path = makeSweepPath(rim); // { kind:'sweepPath', closed, points, length, edgeCount }\npart = filletAlongPath(part, path, 2);           // dihedral fillet\n// part = filletAlongPath(part, path, 2, { profile: 'chamfer' }); // equal-leg chamfer\nreturn part;"
+      ]
+    },
+    {
+      "name": "edge",
+      "signature": "edge(part, id)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "id",
+          "text": "id"
+        }
+      ],
+      "description": "edge(part, id) → mesh segments of one boundary edge. id is the integer shown as e{id} in Fillet mode. ",
+      "doc": "Fillet-mode labels and Accept use these instead of tessellation keys like\n`\"1268-1269\"`.\n\n\n\n**How ids are assigned (current mesh only):**\n- A **face id** is the minimum Manifold `faceID` in a coplanar connected group\n  (normals within 0.1°, plane offset within 1e-3). Shown as `fN`.\n- A **boundary edge id** groups triangle segments that share one unordered face\n  pair and connect through vertices. One CAD edge that was tessellated collinearly\n  is one id (`eN`). A curved rim, where each facet is its own face, stays many ids.\n- Ids are sorted by `(min face, max face, midpoint)` so a fresh cube is stable.\n- `edge(part, id)` and `edgesBetween(part, faceA, faceB)` return\n  `{ key, a, b, va, vb, mid, length }` segments for `makeSweepPath`.\n  `edgesBetween` throws when that pair has more than one boundary — use `edge`.\n\n**Rematch limits:** ids are not a CAD feature tree. Manifold `faceID` is\nprovenance and can merge or split after a boolean, and two disconnected regions\ncan share one minimum faceID. `edge` / `edgesBetween` throw `re-pick edges`\nwhen the id or pair is missing. Re-running a script from scratch is stable only\nwhile the solid *before* the fillet is deterministic. After geometry changes,\nre-pick in Fillet mode (the labels update) rather than editing a stale id.\n\n**Loud failures (script):** bad/empty path; radius ≤ 0; concave edge; cannot orient\ncutter; sweep/boolean failure; ~0 volume removed (wrong orientation); near-no-op vs\nexpected wedge volume; empty result. Never silent wrong solid.\n\n**Soft-fail (UI):** empty / disconnected / branched edge selection — same messages\nas Path; no broken JS inserted.",
+      "examples": [
+        "let part = Manifold.cube([40, 30, 20], true);\nconst cat = boundaryEdges(part); // [{ id, faceA, faceB, mid, length }, ...]\nconst one = cat[0];\nconst selEdges = edgesBetween(part, one.faceA, one.faceB);\n// partial chain: [id, id].flatMap((id) => edge(part, id))\nconst path = makeSweepPath(selEdges);\npart = filletAlongPath(part, path, 2);\nreturn part;"
+      ]
+    },
+    {
+      "name": "edgesBetween",
+      "signature": "edgesBetween(part, faceA, faceB)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        },
+        {
+          "name": "faceA",
+          "text": "faceA"
+        },
+        {
+          "name": "faceB",
+          "text": "faceB"
+        }
+      ],
+      "description": "edgesBetween(part, faceA, faceB) → segments of the only boundary between those face ids. ",
+      "doc": "Fillet-mode labels and Accept use these instead of tessellation keys like\n`\"1268-1269\"`.\n\n\n\n**How ids are assigned (current mesh only):**\n- A **face id** is the minimum Manifold `faceID` in a coplanar connected group\n  (normals within 0.1°, plane offset within 1e-3). Shown as `fN`.\n- A **boundary edge id** groups triangle segments that share one unordered face\n  pair and connect through vertices. One CAD edge that was tessellated collinearly\n  is one id (`eN`). A curved rim, where each facet is its own face, stays many ids.\n- Ids are sorted by `(min face, max face, midpoint)` so a fresh cube is stable.\n- `edge(part, id)` and `edgesBetween(part, faceA, faceB)` return\n  `{ key, a, b, va, vb, mid, length }` segments for `makeSweepPath`.\n  `edgesBetween` throws when that pair has more than one boundary — use `edge`.\n\n**Rematch limits:** ids are not a CAD feature tree. Manifold `faceID` is\nprovenance and can merge or split after a boolean, and two disconnected regions\ncan share one minimum faceID. `edge` / `edgesBetween` throw `re-pick edges`\nwhen the id or pair is missing. Re-running a script from scratch is stable only\nwhile the solid *before* the fillet is deterministic. After geometry changes,\nre-pick in Fillet mode (the labels update) rather than editing a stale id.\n\n**Loud failures (script):** bad/empty path; radius ≤ 0; concave edge; cannot orient\ncutter; sweep/boolean failure; ~0 volume removed (wrong orientation); near-no-op vs\nexpected wedge volume; empty result. Never silent wrong solid.\n\n**Soft-fail (UI):** empty / disconnected / branched edge selection — same messages\nas Path; no broken JS inserted.",
+      "examples": [
+        "let part = Manifold.cube([40, 30, 20], true);\nconst cat = boundaryEdges(part); // [{ id, faceA, faceB, mid, length }, ...]\nconst one = cat[0];\nconst selEdges = edgesBetween(part, one.faceA, one.faceB);\n// partial chain: [id, id].flatMap((id) => edge(part, id))\nconst path = makeSweepPath(selEdges);\npart = filletAlongPath(part, path, 2);\nreturn part;"
+      ]
+    },
+    {
+      "name": "boundaryEdges",
+      "signature": "boundaryEdges(part)",
+      "params": [
+        {
+          "name": "part",
+          "text": "part"
+        }
+      ],
+      "description": "boundaryEdges(part) → catalog { id, faceA, faceB, mid, length } for the current mesh. ",
+      "doc": "Fillet-mode labels and Accept use these instead of tessellation keys like\n`\"1268-1269\"`.\n\n\n\n**How ids are assigned (current mesh only):**\n- A **face id** is the minimum Manifold `faceID` in a coplanar connected group\n  (normals within 0.1°, plane offset within 1e-3). Shown as `fN`.\n- A **boundary edge id** groups triangle segments that share one unordered face\n  pair and connect through vertices. One CAD edge that was tessellated collinearly\n  is one id (`eN`). A curved rim, where each facet is its own face, stays many ids.\n- Ids are sorted by `(min face, max face, midpoint)` so a fresh cube is stable.\n- `edge(part, id)` and `edgesBetween(part, faceA, faceB)` return\n  `{ key, a, b, va, vb, mid, length }` segments for `makeSweepPath`.\n  `edgesBetween` throws when that pair has more than one boundary — use `edge`.\n\n**Rematch limits:** ids are not a CAD feature tree. Manifold `faceID` is\nprovenance and can merge or split after a boolean, and two disconnected regions\ncan share one minimum faceID. `edge` / `edgesBetween` throw `re-pick edges`\nwhen the id or pair is missing. Re-running a script from scratch is stable only\nwhile the solid *before* the fillet is deterministic. After geometry changes,\nre-pick in Fillet mode (the labels update) rather than editing a stale id.\n\n**Loud failures (script):** bad/empty path; radius ≤ 0; concave edge; cannot orient\ncutter; sweep/boolean failure; ~0 volume removed (wrong orientation); near-no-op vs\nexpected wedge volume; empty result. Never silent wrong solid.\n\n**Soft-fail (UI):** empty / disconnected / branched edge selection — same messages\nas Path; no broken JS inserted.",
+      "examples": [
+        "let part = Manifold.cube([40, 30, 20], true);\nconst cat = boundaryEdges(part); // [{ id, faceA, faceB, mid, length }, ...]\nconst one = cat[0];\nconst selEdges = edgesBetween(part, one.faceA, one.faceB);\n// partial chain: [id, id].flatMap((id) => edge(part, id))\nconst path = makeSweepPath(selEdges);\npart = filletAlongPath(part, path, 2);\nreturn part;"
+      ]
+    }
+  ]
+}

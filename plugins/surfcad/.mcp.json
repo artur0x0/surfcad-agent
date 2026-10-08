@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "surfcad": {
+      "command": "npx",
+      "args": ["-y", "surfcad-mcp@0.1.0"]
+    }
+  }
+}

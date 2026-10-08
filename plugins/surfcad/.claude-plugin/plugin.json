@@ -1,0 +1,14 @@
+{
+  "name": "surfcad",
+  "displayName": "SurfCAD",
+  "version": "0.1.0",
+  "description": "Model complete 3D parts and assemblies in SurfCAD on the Manifold kernel.",
+  "author": {
+    "name": "Artur Malinouski",
+    "url": "https://github.com/artur0x0"
+  },
+  "repository": "https://github.com/artur0x0/surfcad-agent",
+  "homepage": "https://github.com/artur0x0/surfcad-agent",
+  "license": "Apache-2.0",
+  "keywords": ["cad", "manifold", "3d", "surfcad"]
+}
