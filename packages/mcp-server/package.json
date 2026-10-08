@@ -1,0 +1,17 @@
+{
+  "name": "surfcad-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Placeholder for the SurfCAD MCP server. The stdio server is a later revision. No API keys.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "mcpName": "io.github.artur0x0/surfcad",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artur0x0/surfcad-agent.git",
+    "directory": "packages/mcp-server"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

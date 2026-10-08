@@ -1,0 +1,15 @@
+{
+  "name": "surfcad-agent",
+  "owner": {
+    "name": "Artur Malinouski",
+    "url": "https://github.com/artur0x0"
+  },
+  "description": "SurfCAD skill and MCP server for agents that bring their own model.",
+  "plugins": [
+    {
+      "name": "surfcad",
+      "source": "./plugins/surfcad",
+      "description": "Model 3D parts and assemblies in SurfCAD (Manifold kernel)"
+    }
+  ]
+}

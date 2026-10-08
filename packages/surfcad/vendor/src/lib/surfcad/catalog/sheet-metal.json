@@ -1,0 +1,161 @@
+{
+  "partSheetMetal": {
+    "description": "What persists on the assembly part row. sku is the key; the rest is a display snapshot so a reload without the network still shows material and thickness.",
+    "source": "src/utils/scs/scsCatalog.js sheetMetalBinding / normalizeSheetMetalBinding",
+    "fields": {
+      "sku": {
+        "type": "string",
+        "required": true
+      },
+      "name": {
+        "type": "string",
+        "description": "Material name snapshot."
+      },
+      "thicknessIn": {
+        "type": "number",
+        "description": "Stock thickness in inches."
+      },
+      "gauge": {
+        "type": "number",
+        "description": "Sheet gauge, when the SKU has one."
+      }
+    }
+  },
+  "script": {
+    "begin": "// --- sheet-metal begin ---",
+    "end": "// --- sheet-metal end ---",
+    "specLine": "const sheetSpec = <JSON>;",
+    "solid": "let part = sheetMetalSolid(sheetSpec);",
+    "source": "src/utils/sheetMetal/sheetMetalScript.js",
+    "note": "Sheet Metal mode writes this marked block. It replaces the starter cube rather than adding onto an existing part."
+  },
+  "spec": {
+    "source": "src/utils/sheetMetal/sheetModel.js",
+    "comment": "spec = {\n  v: 1, sku, t (mm), r (inner bend radius mm), k (k-factor),\n  limits: { …mm / deg from the SKU, see sheetLimitsFromRecord },\n  plane: 'XY' | 'XZ' | 'YZ', width, height,          // base flange (centered)\n  bends: [{ id, panel: 'base' | bendId, edge: 'u+'|'u-'|'v+'|'v-', angle, length, flip }],\n  tabs:  [{ id, panel, edge, width, depth, centered, offset }],\n  holes: [{ id, panel, u, v, d, kind: 'hole'|'countersink'|'tapped' }],\n}",
+    "fields": {
+      "v": "Schema version. 1.",
+      "sku": "SendCutSend SKU.",
+      "material": "Material display name.",
+      "t": "Thickness in mm.",
+      "r": "Inner bend radius in mm.",
+      "k": "K-factor.",
+      "limits": "mm / deg limits copied from the SKU (sheetLimitsFromRecord) so DFM works offline.",
+      "plane": "'XY' | 'XZ' | 'YZ'. Base flange plane.",
+      "width": "Base flange width, mm, centered.",
+      "height": "Base flange height, mm, centered.",
+      "bends": "[{ id, panel: 'base' | bendId, edge: 'u+'|'u-'|'v+'|'v-', angle, length, flip }]",
+      "tabs": "[{ id, panel, edge, width, depth, centered, offset }]",
+      "holes": "[{ id, panel, u, v, d, kind: 'hole'|'countersink'|'tapped' }]"
+    }
+  },
+  "dfm": {
+    "source": "src/utils/sheetMetal/sheetDfm.js",
+    "entry": "checkSheetDfm(spec, { unit })",
+    "note": "Limits and the spec stay in millimetres. unit only formats messages. Hard fails block export and order in the app; warnings do not.",
+    "rules": [
+      {
+        "rule": "spec",
+        "level": "fail",
+        "check": "The sheet spec did not parse.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "model",
+        "level": "fail",
+        "check": "The spec did not solve to a foldable sheet (solver error).",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "no-bending",
+        "level": "fail",
+        "check": "Bends on a SKU whose catalog record has no bending service.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "flange",
+        "level": "fail",
+        "check": "Flange length is below the SKU min flange length after the bend.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "angle",
+        "level": "fail",
+        "check": "Bend angle is outside the SKU min … max bend angle.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "bend-length",
+        "level": "fail",
+        "check": "Bend line is longer than the SKU max bend length.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "min-hole",
+        "level": "fail",
+        "check": "Hole diameter is below the SKU min hole size.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "hole-edge",
+        "level": "fail",
+        "check": "Hole edge is closer to a free panel edge than the SKU minimum, or the hole leaves its face.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "hole-bend",
+        "level": "fail",
+        "check": "Tapped hole centre is closer to a bend line than the SKU minimum (fail), or any hole edge is within 2.5·t + r of a bend (warn).",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "hole-bend",
+        "level": "warn",
+        "check": "Tapped hole centre is closer to a bend line than the SKU minimum (fail), or any hole edge is within 2.5·t + r of a bend (warn).",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "bridge",
+        "level": "fail",
+        "check": "Web between two holes on one panel is below the SKU min bridge, or the holes overlap.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "tab-small",
+        "level": "warn",
+        "check": "Tab width or depth is below max(thickness, min bridge). Warning only.",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "flat-size",
+        "level": "fail",
+        "check": "Flat pattern is outside the SKU min / max flat size (bent) or part size (flat).",
+        "source": "src/utils/sheetMetal/sheetDfm.js"
+      },
+      {
+        "rule": "step-faceted",
+        "level": "warn",
+        "check": "Exact bends could not be built; STEP fell back to the faceted mesh. Warning, from the exporter.",
+        "source": "src/utils/sheetMetal/sheetExport.js"
+      },
+      {
+        "rule": "mesh-stale",
+        "level": "warn",
+        "check": "With the mesh fallback, built volume differs from the spec volume by more than 5%. Warning.",
+        "source": "src/utils/sheetMetal/sheetExport.js"
+      },
+      {
+        "rule": "script-extras",
+        "level": "warn",
+        "check": "The part script has code outside the sheet-metal block. DXF and STEP come from the spec. Warning.",
+        "source": "src/utils/sheetMetal/sheetExport.js"
+      }
+    ]
+  },
+  "export": {
+    "entry": "buildSheetExport(spec, { mesh, script, partName, timestamp, exactStep, unit })",
+    "source": "src/utils/sheetMetal/sheetExport.js",
+    "step": "exactStep true (default) builds an AP214 B-rep with real cylinders at bends (sheetBrep.js → brepToStep). exactStep false, or a spec that cannot fold, falls back to meshToStep (faceted).",
+    "dxf": "Flat pattern DXF from the spec (sheetFlat.js), not from the mesh.",
+    "headless": "src/lib/surfcad/export.js sheetSpecToStep(spec) returns the same STEP text."
+  }
+}

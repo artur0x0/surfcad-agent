@@ -1,0 +1,3 @@
+# Pinned https://github.com/artur0x0/3dculos commit vendored into ./vendor.
+# scripts/sync-3dculos.mjs reads the first full 40-character SHA.
+0b06e5d13817987e9193f41814a647bbc4ed1829
